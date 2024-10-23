@@ -5,7 +5,7 @@ Een SPA die een overzicht toont van de data die ik uit mijn lokale synthscraper 
 
 
 ## Pagina's
-### HOME
+### INDEX
 Deze pagina toont alle opgehaalde keyboards. De gebruiker kan filteren via een zoekfunctie, sorteren op prijs en een filter
 toepassing op de naam.
 Bij het doorklikken van een keyboard op de homepagina wordt een detailmodal van het keyboard getoond.
