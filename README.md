@@ -23,7 +23,7 @@ Tabs / accordion met state op detailpagina.\
 **- Data uit API of JSON:** De data die ik ophaal uit mijn synthscraper.\
 **- Filter:** De filter op de homepagina.\
 **- Context**: Gebruik ik om een eigen accordion te maken.\
-**- React Router**: Om te navigeren tussen de pagina's.\
+**- React Router**: Om te navigeren tussen de pagina's.\npm run de
 
 ## Layout
 **Componenten library:** NextUI en Tailwind.

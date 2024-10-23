@@ -28,13 +28,19 @@ export default function IndexPage() {
 
         <div className="flex gap-3">
           <Button
-            className="font-display text-2xl bg-gradient-to-b from-[#FF1CF7] to-[#b249f8] shadow-lg"
+            className={`bg-gradient-to-b from-[#FF1CF7] to-[#b249f8] shadow-lg`}
             radius="full"
             size="lg"
             variant="shadow"
             onClick={handleClick}
           >
-            Bring me there!
+            <span
+              className={
+                "tracking-tight inline font-button text-2xl lg:text-3xl leading-9 text-white"
+              }
+            >
+              Bring me there!
+            </span>
           </Button>
         </div>
       </section>

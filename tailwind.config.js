@@ -13,6 +13,7 @@ module.exports = {
     extend: {
       fontFamily: {
         display: 'Roboto, sans-serif',
+        button: 'Gabarito, sans-serif',
       }
     }
   },
