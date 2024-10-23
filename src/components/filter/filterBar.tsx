@@ -1,8 +1,8 @@
 import { FunctionComponent } from "react";
 
-import SearchInput from "@/components/searchInput";
-import FilterSelect from "@/components/filterSelect";
-import PriceSlider from "@/components/priceSlider";
+import SearchInput from "@/components/filter/searchInput.tsx";
+import FilterSelect from "@/components/filter/filterSelect.tsx";
+import PriceSlider from "@/components/filter/priceSlider.tsx";
 
 const FilterBar: FunctionComponent = () => {
   return (
