@@ -25,4 +25,4 @@ Op deze pagina kan je keyboards toevoegen aan een wishlist. Deze wishlist is mom
 **React Router**: Om te navigeren tussen de pagina's.
 
 ## Layout
-**Componenten library:** Waarschijnlijk Prime React en Tailwind.
+**Componenten library:** NextUI en Tailwind.
