@@ -1,26 +1,18 @@
 import { FunctionComponent } from "react";
 import { Card, CardHeader, CardBody, Image } from "@nextui-org/react";
 import { Button } from "@nextui-org/button";
-import { HeartIcon } from "@/components/synth/heartIcon.tsx";
+import { HeartIcon } from "@/components/heartIcon.tsx";
 import { Synth } from "@/models/synths.ts";
-import { useWishList } from "@/context/wishlistContext.tsx";
 
 interface SynthCardProps {
   synth: Synth;
+  liked: boolean;
+  onToggleLike: (id: string) => void;
 }
 
-const SynthCard: FunctionComponent<SynthCardProps> = ({ synth }) => {
-  const { wishListItems, setWishListItems } = useWishList();
-  const liked = wishListItems.some((item) => item.naam === synth.naam);
-
+const SynthCard: FunctionComponent<SynthCardProps> = ({ synth, liked, onToggleLike }) => {
   const handleClick = () => {
-    if (liked) {
-      setWishListItems(wishListItems.filter((item) => item.naam !== synth.naam));
-      console.log(`item removed wishlist: ${synth.naam}`);
-    } else {
-      setWishListItems([...wishListItems, synth]);
-      console.log(`item added to wishlist: ${synth.naam}`);
-    }
+    onToggleLike(synth.id);
   };
 
   const name =

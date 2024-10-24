@@ -31,7 +31,7 @@ const getSynths = async (): Promise<Synth[]> => {
 
   const data = await response.json();
 
-
+  // Really bad idea to use uuidv4 here, but it's just for testing purposes
   return data.synths.map((item: Synth) => ({
     ...item,
     id: uuidv4(),
@@ -61,7 +61,7 @@ const getBrands = async (search: string | undefined): Promise<string[]> => {
       brand.includes(firstWord),
     );
 
-    if (!existingBrand) {
+    if (!existingBrand && !synth.naam.toLowerCase().includes("b-stock")) {
       if (synth.source.toLowerCase().includes("bax")) {
         brands.add(nameParts.slice(0, 2).join(" ").trim().toLowerCase());
       } else if (synth.merk.toLowerCase() !== "geen merk gevonden") {

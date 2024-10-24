@@ -10,15 +10,16 @@ export const siteConfig = {
       href: "/synths",
     },
     {
-      label: "Brands",
-      href: "/brands",
-    },
-    {
       label: "Wishlist",
       href: "/wishlist",
+    },
+    {
+      label: "Brands",
+      href: "/brands",
     },
   ],
   links: {
     github: "https://github.com/tiesvdp",
+    website: "https://tiesvdp.be",
   },
 };

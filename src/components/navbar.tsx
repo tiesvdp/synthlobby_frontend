@@ -12,9 +12,9 @@ import { link as linkStyles } from "@nextui-org/theme";
 import clsx from "clsx";
 
 import { siteConfig } from "@/config/site";
-import { ThemeSwitch } from "@/components/theme-switch";
 import { GithubIcon } from "@/components/icons";
 import { Logo } from "@/components/icons";
+import {WebsiteIcon} from '@/components/websiteIcon.tsx'
 
 export const Navbar = () => {
   return (
@@ -56,7 +56,9 @@ export const Navbar = () => {
           <Link isExternal href={siteConfig.links.github} title="GitHub">
             <GithubIcon className="text-default-500" />
           </Link>
-          <ThemeSwitch />
+          <Link isExternal href={siteConfig.links.website}>
+            <WebsiteIcon className="text-default-500" />
+          </Link>
         </NavbarItem>
       </NavbarContent>
 
@@ -64,7 +66,9 @@ export const Navbar = () => {
         <Link isExternal href={siteConfig.links.github}>
           <GithubIcon className="text-default-500" />
         </Link>
-        <ThemeSwitch />
+        <Link isExternal href={siteConfig.links.website}>
+          <WebsiteIcon className="text-default-500" />
+        </Link>
         <NavbarMenuToggle />
       </NavbarContent>
 

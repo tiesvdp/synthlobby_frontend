@@ -11,6 +11,8 @@ interface FilterContextProps {
   priceRange: number[];
   setPriceRange: (priceRange: number[]) => void;
   debouncedPriceRange: number[];
+  filterLikes: boolean;
+  setFilterLikes: (filterLikes: boolean) => void;
 }
 
 const defaultValue: FilterContextProps = {
@@ -22,6 +24,8 @@ const defaultValue: FilterContextProps = {
   priceRange: [50, Infinity],
   setPriceRange: () => {},
   debouncedPriceRange: [50, Infinity],
+  filterLikes: false,
+  setFilterLikes: () => {},
 };
 
 const FilterContext = createContext<FilterContextProps>(defaultValue);
@@ -32,6 +36,7 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
   const [priceRange, setPriceRange, debouncedPriceRange] = useDebouncedState([
     50, Infinity,
   ]);
+  const [filterLikes, setFilterLikes] = useState(false);
 
   return (
     <FilterContext.Provider
@@ -44,6 +49,8 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
         priceRange,
         setPriceRange,
         debouncedPriceRange,
+        filterLikes,
+        setFilterLikes,
       }}
     >
       {children}

@@ -7,4 +7,5 @@ export type Synth = {
   merk: string;
   source: string;
   id: string;
+  liked?: boolean;
 };
