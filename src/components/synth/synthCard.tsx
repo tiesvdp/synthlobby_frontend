@@ -1,46 +1,64 @@
 import { FunctionComponent } from "react";
 import { Card, CardHeader, CardBody, Image } from "@nextui-org/react";
+import { Button } from "@nextui-org/button";
+import { HeartIcon } from "@/components/synth/heartIcon.tsx";
+import { Synth } from "@/models/synths.ts";
+import { useWishList } from "@/context/wishlistContext.tsx";
 
-/*
-import ImageBackgroundRemover from "@/components/imageBackgroundRemove";
-*/
-
-interface synthCardProps {
-  name: string;
-  price?: number;
-  available: string;
-  image?: string;
-  source?: string;
+interface SynthCardProps {
+  synth: Synth;
 }
 
-const SynthCard: FunctionComponent<synthCardProps> = ({
-  name,
-  price,
-  available,
-  image,
-  source,
-}) => {
+const SynthCard: FunctionComponent<SynthCardProps> = ({ synth }) => {
+  const { wishListItems, setWishListItems } = useWishList();
+  const liked = wishListItems.some((item) => item.naam === synth.naam);
+
+  const handleClick = () => {
+    if (liked) {
+      setWishListItems(wishListItems.filter((item) => item.naam !== synth.naam));
+      console.log(`item removed wishlist: ${synth.naam}`);
+    } else {
+      setWishListItems([...wishListItems, synth]);
+      console.log(`item added to wishlist: ${synth.naam}`);
+    }
+  };
+
+  const name =
+    synth.source.toLowerCase().includes("bax") ||
+    synth.source.toLowerCase().includes("musicstore")
+      ? synth.naam
+      : `${synth.merk} ${synth.naam}`;
+
   return (
     <Card className="w-full flex flex-col py-4 flex-grow">
       <CardHeader className="pb-0 pt-2 px-4 flex-col items-start flex-grow">
         <h4 className="font-bold text-large text-start flex-grow">{name}</h4>
         <p className="text-tiny uppercase font-bold flex-grow">
-          {price ? `€${price}` : "geen prijs beschikbaar"}
+          {synth.prijs ? `€${synth.prijs}` : "geen prijs beschikbaar"}
         </p>
-        <small className="text-default-500 flex-grow">{available}</small>
+        <small className="text-default-500 flex-grow">{synth.beschikbaarheid}</small>
       </CardHeader>
       <CardBody className="overflow-visible py-2 flex-grow flex justify-between">
-        {/* Sadly the backgroundremover is too slow. Cool idea though.
-        {image && <ImageBackgroundRemover src={image} />} */}
         <Image
           alt="Card background"
           className="object-cover rounded-xl flex-grow"
-          src={image}
+          src={synth.afbeelding}
           width="100%"
         />
-        <p className="text-end mt-5 me-5 text-tiny uppercase font-bold flex-grow">
-          {source}
-        </p>
+        <div className="flex flex-column items-center">
+          <Button
+            isIconOnly
+            aria-label="Like"
+            className="bg-transparent"
+            disableRipple={true}
+            onClick={handleClick}
+          >
+            <HeartIcon filled={liked} />
+          </Button>
+          <p className="text-end me-5 text-tiny uppercase font-bold flex-grow">
+            {synth.source}
+          </p>
+        </div>
       </CardBody>
     </Card>
   );

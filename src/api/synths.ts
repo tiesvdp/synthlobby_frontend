@@ -3,6 +3,7 @@ import {
   UseSuspenseQueryResult,
 } from "@tanstack/react-query";
 import Fuse from "fuse.js";
+import { v4 as uuidv4 } from "uuid";
 
 import { Synth } from "@/models/synths.ts";
 
@@ -30,7 +31,11 @@ const getSynths = async (): Promise<Synth[]> => {
 
   const data = await response.json();
 
-  return data.synths as Synth[];
+
+  return data.synths.map((item: Synth) => ({
+    ...item,
+    id: uuidv4(),
+  })) as Synth[];
 };
 
 const getBrands = async (search: string | undefined): Promise<string[]> => {

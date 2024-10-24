@@ -6,4 +6,5 @@ export type Synth = {
   afbeelding: string;
   merk: string;
   source: string;
+  id: string;
 };

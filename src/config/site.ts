@@ -18,20 +18,6 @@ export const siteConfig = {
       href: "/wishlist",
     },
   ],
-  navMenuItems: [
-    {
-      label: "Home",
-      href: "/",
-    },
-    {
-      label: "Brands",
-      href: "/brands",
-    },
-    {
-      label: "Wishlist",
-      href: "/wishlist",
-    },
-  ],
   links: {
     github: "https://github.com/tiesvdp",
   },
