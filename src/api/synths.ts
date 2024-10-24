@@ -33,26 +33,51 @@ const getSynths = async (): Promise<Synth[]> => {
   return data.synths as Synth[];
 };
 
-const getBrands = async (search: string): Promise<string[]> => {
+const getBrands = async (search: string | undefined): Promise<string[]> => {
   // Suspense testing
   await new Promise<void>((resolve) => setTimeout(() => resolve(), 500));
 
-  const response = await fetch("../data/synthData.json");
-
+  const response = await fetch("/data/synthData.json");
   const data = await response.json();
-  const synths = data as Synth[];
+  const synths = data.synths as Synth[];
 
   const brands = new Set<string>();
 
+  // Enkel unieke merken toevoegen
   synths.forEach((synth) => {
-    if (synth.merk) {
-      brands.add(synth.merk);
+    const nameParts = synth.naam.split(" ");
+    const merkParts = synth.merk.split(" ");
+    const firstWord = synth.source.toLowerCase().includes("bax")
+      ? nameParts[0].toLowerCase()
+      : merkParts[0].toLowerCase();
+    const brandsArray = Array.from(brands).map((brand) => brand.toLowerCase());
+
+    const existingBrand = brandsArray.find((brand) =>
+      brand.includes(firstWord),
+    );
+
+    if (!existingBrand) {
+      if (synth.source.toLowerCase().includes("bax")) {
+        brands.add(nameParts.slice(0, 2).join(" ").trim().toLowerCase());
+      } else if (synth.merk.toLowerCase() !== "geen merk gevonden") {
+        brands.add(synth.merk.trim().toLowerCase());
+      }
     }
   });
-  const brandArray = Array.from(brands);
 
-  const fuse = new Fuse(brandArray, { includeScore: true });
+  const brandArray = Array.from(brands)
+    .map((brand) => brand.charAt(0).toUpperCase() + brand.slice(1))
+    .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+  if (!search) {
+    return brandArray;
+  }
+
+  const fuse = new Fuse(brandArray, { includeScore: false, keys: ["brand"] });
   const result = fuse.search(search);
+  const array = result.map((r) => r.item);
 
-  return result.map((r) => r.item);
+  console.log(array);
+
+  return array;
 };

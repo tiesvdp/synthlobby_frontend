@@ -1,1 +1,1 @@
-export type Brands = [string];
+export type Brand = string;

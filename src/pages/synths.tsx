@@ -22,7 +22,7 @@ export default function SynthsPage() {
               <SynthPagination />
               <Suspense
                 fallback={
-                  <div className="grid grid-cols-3 gap-4 my-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 auto-rows-fr my-5">
                     {Array.from({ length: 12 }).map((_, index) => (
                       <SkeletonCard key={index} />
                     ))}
