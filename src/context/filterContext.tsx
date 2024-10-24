@@ -10,14 +10,28 @@ interface FilterContextProps {
   setFilterType: (filterType: string) => void;
   priceRange: number[];
   setPriceRange: (priceRange: number[]) => void;
+  debouncedPriceRange: number[];
 }
 
-const FilterContext = createContext<FilterContextProps | undefined>(undefined);
+const defaultValue: FilterContextProps = {
+  search: "",
+  setSearch: () => {},
+  debouncedSearch: "",
+  filterType: "",
+  setFilterType: () => {},
+  priceRange: [50, Infinity],
+  setPriceRange: () => {},
+  debouncedPriceRange: [50, Infinity],
+};
+
+const FilterContext = createContext<FilterContextProps>(defaultValue);
 
 export const FilterProvider = ({ children }: { children: ReactNode }) => {
   const [search, setSearch, debouncedSearch] = useDebouncedState("");
   const [filterType, setFilterType] = useState("");
-  const [priceRange, setPriceRange] = useState([50, 3000]);
+  const [priceRange, setPriceRange, debouncedPriceRange] = useDebouncedState([
+    50, Infinity,
+  ]);
 
   return (
     <FilterContext.Provider
@@ -29,6 +43,7 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
         setFilterType,
         priceRange,
         setPriceRange,
+        debouncedPriceRange,
       }}
     >
       {children}
@@ -36,12 +51,6 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useFilter = () => {
-  const context = useContext(FilterContext);
-
-  if (!context) {
-    throw new Error("useFilter must be used within a FilterProvider");
-  }
-
-  return context;
+export const useFilter = (): FilterContextProps => {
+  return useContext(FilterContext);
 };

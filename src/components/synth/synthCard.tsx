@@ -1,7 +1,9 @@
 import { FunctionComponent } from "react";
 import { Card, CardHeader, CardBody, Image } from "@nextui-org/react";
 
+/*
 import ImageBackgroundRemover from "@/components/imageBackgroundRemove";
+*/
 
 interface synthCardProps {
   name: string;

@@ -7,7 +7,7 @@ import {
   Button,
 } from "@nextui-org/react";
 
-import { useFilter } from "@/context/FilterContext.tsx";
+import { useFilter } from "@/context/filterContext.tsx";
 
 const FilterSelect: FunctionComponent = () => {
   const { setFilterType } = useFilter();

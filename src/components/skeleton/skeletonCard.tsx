@@ -1,5 +1,6 @@
 import { FunctionComponent } from "react";
 import { Card, CardHeader, CardBody, Skeleton } from "@nextui-org/react";
+import SkeletonImage from "@/components/skeleton/skeletonImage.tsx";
 
 const SkeletonCard: FunctionComponent = () => {
   return (
@@ -16,9 +17,7 @@ const SkeletonCard: FunctionComponent = () => {
         </Skeleton>
       </CardHeader>
       <CardBody className="overflow-visible py-2">
-        <Skeleton className="w-full rounded-xl">
-          <div className="relative w-full pb-[100%] rounded-xl bg-secondary"></div>
-        </Skeleton>
+        <SkeletonImage />
         <Skeleton className="w-1/2 rounded-lg mt-5 me-5">
           <div className="h-4 w-full rounded-lg bg-secondary-300"></div>
         </Skeleton>

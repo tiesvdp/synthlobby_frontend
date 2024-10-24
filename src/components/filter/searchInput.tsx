@@ -1,7 +1,7 @@
 import { FunctionComponent } from "react";
 import { Input } from "@nextui-org/input";
 import { SearchIcon } from "@/components/icons.tsx";
-import { useFilter } from "@/context/FilterContext.tsx";
+import { useFilter } from "@/context/filterContext.tsx";
 
 const SearchInput: FunctionComponent = () => {
   const { search, setSearch } = useFilter();
