@@ -73,11 +73,11 @@ const SynthCardWrapper: FunctionComponent<{ children: ReactNode }> = ({
 }) => {
   return (
     <motion.div
+      animate={{ opacity: 0, y: 20 }}
       className="flex flex-grow"
       exit={{ opacity: 0, y: -20 }}
-      initial={{ opacity: 0, y: 20 }}
-      transition={{ duration: 0.5 }}
-      viewport={{ amount: 0.3 }}
+      transition={{ duration: 0.5, height: 0.5 }}
+      viewport={{ amount: 0.1 }}
       whileInView={{ opacity: 1, y: 0 }}
     >
       {children}

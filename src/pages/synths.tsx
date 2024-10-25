@@ -1,12 +1,22 @@
-import { Suspense } from "react";
+// synths.tsx
+import { Suspense, lazy } from "react";
 
 import DefaultLayout from "@/layouts/default";
 import FilterBar from "@/components/filter/filterBar.tsx";
-import SynthList from "@/components/synth/synthList.tsx";
 import SkeletonCard from "@/components/skeleton/skeletonCard.tsx";
 import { FilterProvider } from "@/context/filterContext.tsx";
 import { PaginationProvider } from "@/context/paginationContext.tsx";
 import SynthPagination from "@/components/synth/synthPagination.tsx";
+
+// Fake delay om de Suspense fallback te tonen
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const lazyWithDelay = (importFn: () => Promise<any>, ms: number) =>
+  lazy(() => Promise.all([importFn(), delay(ms)]).then(([module]) => module));
+
+const SynthList = lazyWithDelay(
+  () => import("@/components/synth/synthList.tsx"),
+  1000,
+); // 1-second delay
 
 export default function SynthsPage() {
   return (

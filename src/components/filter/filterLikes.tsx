@@ -1,8 +1,8 @@
-import {FunctionComponent} from 'react'
+import { FunctionComponent } from "react";
 import { Button } from "@nextui-org/button";
 
 import { HeartIcon } from "@/components/heartIcon.tsx";
-import {useFilter} from '@/context/filterContext.tsx'
+import { useFilter } from "@/context/filterContext.tsx";
 
 const FilterLikes: FunctionComponent = () => {
   const { filterLikes, setFilterLikes } = useFilter();
@@ -12,7 +12,13 @@ const FilterLikes: FunctionComponent = () => {
   };
 
   return (
-    <Button isIconOnly aria-label="Like" onClick={handleClick} color="default" variant="ghost">
+    <Button
+      isIconOnly
+      aria-label="Like"
+      color="default"
+      variant="ghost"
+      onClick={handleClick}
+    >
       <HeartIcon filled={filterLikes} />
     </Button>
   );

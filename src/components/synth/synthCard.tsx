@@ -1,6 +1,8 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, Suspense } from "react";
 import { Card, CardHeader, CardBody, Image } from "@nextui-org/react";
 import { Button } from "@nextui-org/button";
+import { motion } from "framer-motion";
+
 import { HeartIcon } from "@/components/heartIcon.tsx";
 import { Synth } from "@/models/synths.ts";
 
@@ -10,7 +12,11 @@ interface SynthCardProps {
   onToggleLike: (id: string) => void;
 }
 
-const SynthCard: FunctionComponent<SynthCardProps> = ({ synth, liked, onToggleLike }) => {
+const SynthCard: FunctionComponent<SynthCardProps> = ({
+  synth,
+  liked,
+  onToggleLike,
+}) => {
   const handleClick = () => {
     onToggleLike(synth.id);
   };
@@ -21,6 +27,7 @@ const SynthCard: FunctionComponent<SynthCardProps> = ({ synth, liked, onToggleLi
       ? synth.naam
       : `${synth.merk} ${synth.naam}`;
 
+  // @ts-ignore
   return (
     <Card className="w-full flex flex-col py-4 flex-grow">
       <CardHeader className="pb-0 pt-2 px-4 flex-col items-start flex-grow">
@@ -28,15 +35,32 @@ const SynthCard: FunctionComponent<SynthCardProps> = ({ synth, liked, onToggleLi
         <p className="text-tiny uppercase font-bold flex-grow">
           {synth.prijs ? `€${synth.prijs}` : "geen prijs beschikbaar"}
         </p>
-        <small className="text-default-500 flex-grow">{synth.beschikbaarheid}</small>
+        <small className="text-default-500 flex-grow">
+          {synth.beschikbaarheid}
+        </small>
       </CardHeader>
       <CardBody className="overflow-visible py-2 flex-grow flex justify-between">
-        <Image
-          alt="Card background"
-          className="object-cover rounded-xl flex-grow"
-          src={synth.afbeelding}
-          width="100%"
-        />
+        <Suspense
+          fallback={
+            <div className="w-full rounded-xl">
+              <div className="object-cover rounded-xl flex-grow w-full pb-[100%]" />
+            </div>
+          }
+        >
+          <motion.div
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full rounded-xl"
+            initial={{ opacity: 0, scale: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Image
+              alt="Card background"
+              className="object-cover rounded-xl flex-grow"
+              src={synth.afbeelding}
+              width="100%"
+            />
+          </motion.div>
+        </Suspense>
         <div className="flex flex-column items-center">
           <Button
             isIconOnly

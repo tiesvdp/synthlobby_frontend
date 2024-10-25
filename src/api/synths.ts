@@ -11,6 +11,8 @@ export const useGetSynths = (): UseSuspenseQueryResult<Synth[]> => {
   return useSuspenseQuery({
     queryKey: ["synths"],
     queryFn: getSynths,
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 10,
   });
 };
 
@@ -20,12 +22,14 @@ export const useGetBrands = (
   return useSuspenseQuery({
     queryKey: ["brands", search],
     queryFn: () => getBrands(search),
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 10,
   });
 };
 
 const getSynths = async (): Promise<Synth[]> => {
-  // Suspense testing
-  await new Promise<void>((resolve) => setTimeout(() => resolve(), 500));
+  /*//Suspense testing
+  await new Promise<void>((resolve) => setTimeout(() => resolve(), 2000));*/
 
   const response = await fetch("/data/synthData.json");
 
