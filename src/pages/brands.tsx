@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import DefaultLayout from "@/layouts/default";
 import BrandList from "@/components/brand/brandList.tsx";
 import { subtitle, title } from "@/components/primitives.ts";
-import FallBack from '@/components/fallBack.tsx'
+import FallBack from "@/components/fallBack.tsx";
 
 export default function BrandsPage() {
   return (
