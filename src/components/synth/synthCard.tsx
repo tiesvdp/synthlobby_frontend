@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, Suspense, useState } from "react";
+import { FunctionComponent, memo, Suspense } from "react";
 import { Card, CardHeader, CardBody, Image } from "@heroui/react";
 import { Button } from "@heroui/button";
 import { motion } from "framer-motion";

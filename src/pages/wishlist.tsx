@@ -9,6 +9,9 @@ export default function WishlistPage() {
   return (
     <DefaultLayout>
       <section className="text-center">
+        <div className={subtitle({ class: "mt-4" })}>
+          THIS PAGE IS STILL UNDER CONSTRUCTION!
+        </div>
         <span className={`${title()}`}>This,&nbsp;</span>{" "}
         <span className={title({ color: "violet" })}>or that?&nbsp;</span>
         <div className={subtitle({ class: "mt-4" })}>

@@ -1,7 +1,6 @@
 import { Link } from "@heroui/link";
-
-import { Navbar } from "@/components/navbar";
 import PageTransition from "@/motion/pageTransition.tsx";
+import { Navbar } from "@/components/navbar";
 
 export default function DefaultLayout({
   children,
@@ -9,9 +8,9 @@ export default function DefaultLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative flex flex-col h-screen">
+    <div className="relative flex flex-col h-screen container mx-auto max-w-8xl">
       <Navbar />
-      <main className="container mx-auto max-w-7xl px-6 flex-grow pt-10">
+      <main className="container mx-auto max-w-8xl px-6 flex-grow pt-8">
         <PageTransition>{children}</PageTransition>
       </main>
       <footer className="w-full flex items-center justify-center py-3">

@@ -1,5 +1,5 @@
 // src/context/SynthContext.tsx
-import React, {
+import {
   createContext,
   useContext,
   useState,

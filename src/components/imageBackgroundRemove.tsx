@@ -1,7 +1,7 @@
 
 // Too slow, sadly... very cool library though
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { removeBackground } from "@imgly/background-removal";
 
 const ImageBackgroundRemover: React.FC<{ src: string }> = ({ src }) => {

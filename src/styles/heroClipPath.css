@@ -1,0 +1,46 @@
+/* Option 1: Diagonal Slice */
+.clip-hero-path-1 {
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+}
+
+/* Option 2: Wave Pattern */
+.clip-hero-path-2 {
+  clip-path: polygon(0% 0%, 100% 0%, 100% 85%, 75% 90%, 50% 85%, 25% 90%, 0% 85%);
+}
+
+/* Option 3: Curved Corner */
+.clip-hero-path-3 {
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 85%, 75% 100%, 0 100%);
+}
+
+/* Option 4: Asymmetric Cut */
+.clip-hero-path-4 {
+  clip-path: polygon(0 0, 100% 0, 100% 70%, 90% 90%, 70% 95%, 30% 90%, 0 100%);
+}
+
+.clip-hero-path {
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .clip-hero-path-1 {
+    clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+  }
+
+  .clip-hero-path-2 {
+    clip-path: polygon(0% 0%, 100% 0%, 100% 90%, 75% 95%, 50% 90%, 25% 95%, 0% 90%);
+  }
+
+  .clip-hero-path-3 {
+    clip-path: polygon(0 0, 100% 0, 100% 90%, 85% 90%, 75% 100%, 0 100%);
+  }
+
+  .clip-hero-path-4 {
+    clip-path: polygon(0 0, 100% 0, 100% 80%, 90% 90%, 70% 95%, 30% 90%, 0 100%);
+  }
+
+  .clip-hero-path {
+    clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+  }
+}

@@ -1,6 +1,6 @@
 import { FunctionComponent, ReactNode, useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-
+import { Synth } from "@/models/synths.ts";
 import SynthCard from "@/components/synth/synthCard.tsx";
 import { useSynths } from "@/context/synthContext.tsx";
 import { useFilter } from "@/context/filterContext.tsx";
@@ -12,8 +12,13 @@ const SynthList: FunctionComponent = () => {
   const { currentPage, setCurrentPage, setTotalPages } = usePagination();
   const itemsPerPage = 24;
 
-  const handleToggleLike = (id: string) =>
-    setSynths((prev) => prev.map((s) => (s.id === id ? { ...s, liked: !s.liked } : s)));
+
+  interface HandleToggleLike {
+    (id: string): void;
+  }
+
+  const handleToggleLike: HandleToggleLike = (id) =>
+    setSynths((prev: Synth[]) => prev.map((s: Synth) => (s.id === id ? { ...s, liked: !s.liked } : s)));
 
   // Filtering logic
   const filteredSynths = useMemo(() => {

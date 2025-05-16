@@ -1,5 +1,4 @@
-// src/components/wishlist/WishListList.tsx
-import React, { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Card,
   CardBody,
@@ -31,7 +30,7 @@ export default function WishListList() {
     selectedKeys.has(synth.id),
   );
 
-  const totalPrice = React.useMemo(() => {
+  const totalPrice = useMemo(() => {
     return filteredLikedSynths.reduce(
       (acc, synth) => acc + Number(synth.prijs || 0),
       0,
