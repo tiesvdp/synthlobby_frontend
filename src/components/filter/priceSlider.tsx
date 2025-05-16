@@ -1,5 +1,5 @@
 import { FunctionComponent } from "react";
-import { cn, Slider } from "@nextui-org/react";
+import { cn, Slider } from "@heroui/react";
 
 import { useFilter } from "@/context/filterContext.tsx";
 

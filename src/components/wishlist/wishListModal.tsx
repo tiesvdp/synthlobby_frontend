@@ -6,8 +6,8 @@ import {
   ModalBody,
   ModalFooter,
   Button,
-} from "@nextui-org/react";
-import { Link } from "@nextui-org/link";
+} from "@heroui/react";
+import { Link } from "@heroui/link";
 
 import { Synth } from "@/models/synths.ts";
 

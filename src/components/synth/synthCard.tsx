@@ -1,6 +1,6 @@
-import { FunctionComponent, Suspense } from "react";
-import { Card, CardHeader, CardBody, Image } from "@nextui-org/react";
-import { Button } from "@nextui-org/button";
+import { FunctionComponent, memo, Suspense, useState } from "react";
+import { Card, CardHeader, CardBody, Image } from "@heroui/react";
+import { Button } from "@heroui/button";
 import { motion } from "framer-motion";
 
 import { HeartIcon } from "@/components/heartIcon.tsx";
@@ -12,11 +12,7 @@ interface SynthCardProps {
   onToggleLike: (id: string) => void;
 }
 
-const SynthCard: FunctionComponent<SynthCardProps> = ({
-  synth,
-  liked,
-  onToggleLike,
-}) => {
+const SynthCard: FunctionComponent<SynthCardProps> = ({synth,liked,onToggleLike}) => {
   const handleClick = () => {
     onToggleLike(synth.id);
   };
@@ -29,7 +25,7 @@ const SynthCard: FunctionComponent<SynthCardProps> = ({
 
   // @ts-ignore
   return (
-    <Card className="w-full flex flex-col py-4 flex-grow">
+    <Card className="w-full flex flex-col py-4 flex-grow min-h-[600px]">
       <CardHeader className="pb-0 pt-2 px-4 flex-col items-start flex-grow">
         <h4 className="font-bold text-large text-start flex-grow">{name}</h4>
         <p className="text-tiny uppercase font-bold flex-grow">
@@ -50,7 +46,7 @@ const SynthCard: FunctionComponent<SynthCardProps> = ({
           <motion.div
             animate={{ opacity: 1, scale: 1 }}
             className="w-full rounded-xl"
-            initial={{ opacity: 0, scale: 0 }}
+            initial={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
           >
             <Image
@@ -80,4 +76,4 @@ const SynthCard: FunctionComponent<SynthCardProps> = ({
   );
 };
 
-export default SynthCard;
+export default memo(SynthCard);

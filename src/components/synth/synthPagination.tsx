@@ -1,5 +1,5 @@
 import { FunctionComponent } from "react";
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 
 import { usePagination } from "@/context/paginationContext.tsx";
 

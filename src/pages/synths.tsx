@@ -13,10 +13,11 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const lazyWithDelay = (importFn: () => Promise<any>, ms: number) =>
   lazy(() => Promise.all([importFn(), delay(ms)]).then(([module]) => module));
 
+// Gotta show off the skeletons, hehe
 const SynthList = lazyWithDelay(
   () => import("@/components/synth/synthList.tsx"),
-  1000,
-); // 1-second delay
+  500,
+);
 
 export default function SynthsPage() {
   return (

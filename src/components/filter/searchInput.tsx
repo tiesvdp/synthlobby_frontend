@@ -1,5 +1,5 @@
 import { FunctionComponent } from "react";
-import { Input } from "@nextui-org/input";
+import { Input } from "@heroui/input";
 import { SearchIcon } from "@/components/icons.tsx";
 import { useFilter } from "@/context/filterContext.tsx";
 

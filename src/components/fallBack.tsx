@@ -1,5 +1,5 @@
 import { FunctionComponent } from "react";
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 
 interface FallBackProps {
   text?: string;

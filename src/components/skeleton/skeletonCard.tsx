@@ -1,10 +1,10 @@
 import { FunctionComponent } from "react";
-import { Card, CardHeader, CardBody, Skeleton } from "@nextui-org/react";
+import { Card, CardHeader, CardBody, Skeleton } from "@heroui/react";
 import SkeletonImage from "@/components/skeleton/skeletonImage.tsx";
 
 const SkeletonCard: FunctionComponent = () => {
   return (
-    <Card className="w-full flex flex-col py-4">
+    <Card className="w-full flex flex-col py-4 min-h-[600px] flex-grow">
       <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
         <Skeleton className="w-full rounded-lg">
           <div className="h-6 w-full rounded-lg bg-secondary"></div>

@@ -7,8 +7,8 @@ import {
   ListboxItem,
   Selection,
   useDisclosure,
-} from "@nextui-org/react";
-import { Button } from "@nextui-org/button";
+} from "@heroui/react";
+import { Button } from "@heroui/button";
 
 import ListboxCard from "@/components/wishlist/listboxCard.tsx";
 import { useSynths } from "@/context/synthContext.tsx";

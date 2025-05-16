@@ -1,5 +1,5 @@
 import { FunctionComponent } from "react";
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 
 import { HeartIcon } from "@/components/heartIcon.tsx";
 import { useFilter } from "@/context/filterContext.tsx";
