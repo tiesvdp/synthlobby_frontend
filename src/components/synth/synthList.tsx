@@ -1,4 +1,10 @@
-import { FunctionComponent, ReactNode, useMemo, useState, useEffect } from "react";
+import {
+  FunctionComponent,
+  ReactNode,
+  useMemo,
+  useState,
+  useEffect,
+} from "react";
 import { motion } from "framer-motion";
 import { Synth } from "@/models/synths.ts";
 import SynthCard from "@/components/synth/synthCard.tsx";
@@ -8,27 +14,35 @@ import { usePagination } from "@/context/paginationContext.tsx";
 
 const SynthList: FunctionComponent = () => {
   const { synths, setSynths } = useSynths();
-  const { debouncedSearch, filterType, debouncedPriceRange, filterLikes } = useFilter();
+  const { debouncedSearch, filterType, debouncedPriceRange, filterLikes } =
+    useFilter();
   const { currentPage, setCurrentPage, setTotalPages } = usePagination();
   const itemsPerPage = 24;
-
 
   interface HandleToggleLike {
     (id: string): void;
   }
 
   const handleToggleLike: HandleToggleLike = (id) =>
-    setSynths((prev: Synth[]) => prev.map((s: Synth) => (s.id === id ? { ...s, liked: !s.liked } : s)));
+    setSynths((prev: Synth[]) =>
+      prev.map((s: Synth) => (s.id === id ? { ...s, liked: !s.liked } : s))
+    );
 
   // Filtering logic
   const filteredSynths = useMemo(() => {
     return synths
-      .filter(({ merk, naam }) =>
-        `${merk} ${naam}`.toLowerCase().includes(debouncedSearch.toLowerCase())
+      .filter(({ brand, name }) =>
+        `${brand} ${name}`.toLowerCase().includes(debouncedSearch.toLowerCase())
       )
-      .filter(({ prijs }) => prijs >= debouncedPriceRange[0] && prijs <= debouncedPriceRange[1])
+      .filter(
+        ({ price }) =>
+          price >= debouncedPriceRange[0] && price <= debouncedPriceRange[1]
+      )
       .filter(({ liked }) => (filterLikes ? liked : true))
-      .sort((a, b) => ({ asc: a.prijs - b.prijs, des: b.prijs - a.prijs }[filterType] || 0));
+      .sort(
+        (a, b) =>
+          ({ asc: a.price - b.price, des: b.price - a.price }[filterType] || 0)
+      );
   }, [synths, debouncedSearch, debouncedPriceRange, filterLikes, filterType]);
 
   // Update pagination and handle page overflow
@@ -51,8 +65,12 @@ const SynthList: FunctionComponent = () => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 auto-rows-fr my-5">
       {paginatedSynths.map((synth) => (
-        <SynthCardWrapper key={synth.id} imageUrl={synth.afbeelding}>
-          <SynthCard liked={synth.liked ?? false} synth={synth} onToggleLike={handleToggleLike} />
+        <SynthCardWrapper key={synth.id} imageUrl={synth.image}>
+          <SynthCard
+            liked={synth.liked ?? false}
+            synth={synth}
+            onToggleLike={handleToggleLike}
+          />
         </SynthCardWrapper>
       ))}
     </div>
@@ -60,10 +78,10 @@ const SynthList: FunctionComponent = () => {
 };
 
 // Image loader wrapper (optimized)
-const SynthCardWrapper: FunctionComponent<{ children: ReactNode; imageUrl: string }> = ({
-  children,
-  imageUrl,
-}) => {
+const SynthCardWrapper: FunctionComponent<{
+  children: ReactNode;
+  imageUrl: string;
+}> = ({ children, imageUrl }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
@@ -73,7 +91,12 @@ const SynthCardWrapper: FunctionComponent<{ children: ReactNode; imageUrl: strin
       transition={{ duration: 0.5 }}
       className="flex flex-grow"
     >
-      <img src={imageUrl} onLoad={() => setIsLoaded(true)} className="hidden" alt="" />
+      <img
+        src={imageUrl}
+        onLoad={() => setIsLoaded(true)}
+        className="hidden"
+        alt=""
+      />
       {isLoaded && children}
     </motion.div>
   );

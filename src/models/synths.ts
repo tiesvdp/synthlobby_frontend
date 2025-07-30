@@ -1,10 +1,10 @@
 export type Synth = {
-  naam: string;
+  name: string;
   href: string;
-  prijs: number;
-  beschikbaarheid: string;
-  afbeelding: string;
-  merk: string;
+  price: number;
+  availability: string;
+  image: string;
+  brand: string;
   source: string;
   id: string;
   liked?: boolean;

@@ -1,75 +1,87 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useSynths } from "@/context/synthContext.tsx"
-import { HeartIcon } from "@/components/heartIcon.tsx"
-import { Button } from "@heroui/button"
-import { Card } from "@heroui/card"
-import type { Synth } from "@/models/synths.ts"
-import { motion } from "framer-motion"
+import { useEffect, useState } from "react";
+import { useSynths } from "@/context/synthContext.tsx";
+import { HeartIcon } from "@/components/heartIcon.tsx";
+import { Button } from "@heroui/button";
+import { Card } from "@heroui/card";
+import type { Synth } from "@/models/synths.ts";
+import { motion } from "framer-motion";
 
 export function SynthCarousel() {
-  const { synths, setSynths } = useSynths()
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [featuredSynths, setFeaturedSynths] = useState<Synth[]>([])
-  const [isHovering, setIsHovering] = useState(false)
+  const { synths, setSynths } = useSynths();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [featuredSynths, setFeaturedSynths] = useState<Synth[]>([]);
+  const [isHovering, setIsHovering] = useState(false);
 
-  const musicstoreSynths = synths.filter((synth) => synth.source?.toLowerCase().includes("musicstore")).reverse()
+  const musicstoreSynths = synths
+    .filter((synth) => synth.source?.toLowerCase().includes("musicstore"))
+    .reverse();
 
   useEffect(() => {
-    const shuffled = [...musicstoreSynths].sort(() => Math.random() - 0.5)
-    setFeaturedSynths(shuffled.slice(0, 8))
-  }, [synths])
+    const shuffled = [...musicstoreSynths].sort(() => Math.random() - 0.5);
+    setFeaturedSynths(shuffled.slice(0, 8));
+  }, [synths]);
 
   // Number of cards to show based on screen size
-  const [cardsToShow, setCardsToShow] = useState(3)
+  const [cardsToShow, setCardsToShow] = useState(3);
 
   useEffect(() => {
     // Set cards to show based on window width
     const handleResize = () => {
       if (window.innerWidth < 640) {
-        setCardsToShow(1)
+        setCardsToShow(1);
       } else if (window.innerWidth < 1024) {
-        setCardsToShow(2)
+        setCardsToShow(2);
       } else {
-        setCardsToShow(3)
+        setCardsToShow(3);
       }
-    }
+    };
 
-    handleResize()
-    window.addEventListener("resize", handleResize)
+    handleResize();
+    window.addEventListener("resize", handleResize);
 
     // Set loaded state
     if (synths.length > 0) {
-      setIsLoaded(true)
+      setIsLoaded(true);
     }
 
-    return () => window.removeEventListener("resize", handleResize)
-  }, [synths])
+    return () => window.removeEventListener("resize", handleResize);
+  }, [synths]);
 
   const handleNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1 >= featuredSynths.length - cardsToShow + 1 ? 0 : prevIndex + 1))
-  }
+    setCurrentIndex((prevIndex) =>
+      prevIndex + 1 >= featuredSynths.length - cardsToShow + 1
+        ? 0
+        : prevIndex + 1
+    );
+  };
 
   const handlePrev = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === 0 ? Math.max(0, featuredSynths.length - cardsToShow) : prevIndex - 1))
-  }
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0
+        ? Math.max(0, featuredSynths.length - cardsToShow)
+        : prevIndex - 1
+    );
+  };
 
   const handleToggleLike = (id: Synth["id"]) => {
-    setSynths((prev: Synth[]) => prev.map((s: Synth) => (s.id === id ? { ...s, liked: !s.liked } : s)))
-  }
+    setSynths((prev: Synth[]) =>
+      prev.map((s: Synth) => (s.id === id ? { ...s, liked: !s.liked } : s))
+    );
+  };
 
   // Auto-advance carousel
   useEffect(() => {
-    if (isHovering) return // Don't auto-advance when user is hovering
+    if (isHovering) return; // Don't auto-advance when user is hovering
 
     const interval = setInterval(() => {
-      handleNext()
-    }, 5000)
+      handleNext();
+    }, 5000);
 
-    return () => clearInterval(interval)
-  }, [currentIndex, isHovering, featuredSynths.length])
+    return () => clearInterval(interval);
+  }, [currentIndex, isHovering, featuredSynths.length]);
 
   if (!isLoaded || featuredSynths.length === 0) {
     return (
@@ -79,7 +91,7 @@ export function SynthCarousel() {
           <div className="h-64 w-full max-w-md bg-default-200 rounded"></div>
         </div>
       </div>
-    )
+    );
   }
 
   // If we don't have enough musicstore synths, show a message
@@ -88,11 +100,15 @@ export function SynthCarousel() {
       <div className="text-center py-10">
         <p>Not enough synths available. Check back soon!</p>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="relative pb-8" onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
+    <div
+      className="relative pb-8"
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
       {/* Carousel container with shadow and border */}
       <div className="rounded-xl overflow-hidden shadow-lg border border-purple-100 bg-white">
         <div className="flex overflow-hidden">
@@ -103,7 +119,7 @@ export function SynthCarousel() {
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             {featuredSynths.map((synth) => {
-              const name = synth.naam || `${synth.merk} ${synth.naam}`
+              const name = synth.name || `${synth.brand} ${synth.name}`;
 
               return (
                 <motion.div
@@ -118,7 +134,7 @@ export function SynthCarousel() {
                       <img
                         alt={name}
                         className="object-cover absolute top-0 left-0 w-full h-full transition-transform duration-500 hover:scale-110"
-                        src={synth.afbeelding || "/placeholder.svg"}
+                        src={synth.image || "/placeholder.svg"}
                       />
                       <div className="absolute top-2 right-2">
                         <Button
@@ -137,13 +153,19 @@ export function SynthCarousel() {
                     </div>
                     <div className="p-4 flex justify-between items-center bg-white">
                       <div>
-                        <p className="text-default-500 text-sm">{synth.source}</p>
-                        <p className="font-bold text-lg">{synth.prijs ? `€${synth.prijs}` : "Price unavailable"}</p>
+                        <p className="text-default-500 text-sm">
+                          {synth.source}
+                        </p>
+                        <p className="font-bold text-lg">
+                          {synth.price
+                            ? `€${synth.price}`
+                            : "Price unavailable"}
+                        </p>
                       </div>
                     </div>
                   </Card>
                 </motion.div>
-              )
+              );
             })}
           </motion.div>
         </div>
@@ -175,7 +197,9 @@ export function SynthCarousel() {
 
         {/* Dots indicator */}
         <div className="flex justify-center gap-1">
-          {Array.from({ length: Math.ceil(featuredSynths.length - cardsToShow + 1) }).map((_, index) => (
+          {Array.from({
+            length: Math.ceil(featuredSynths.length - cardsToShow + 1),
+          }).map((_, index) => (
             <button
               key={index}
               className={`h-2 rounded-full transition-all ${
@@ -209,5 +233,5 @@ export function SynthCarousel() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

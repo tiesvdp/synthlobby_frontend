@@ -12,7 +12,11 @@ interface SynthCardProps {
   onToggleLike: (id: string) => void;
 }
 
-const SynthCard: FunctionComponent<SynthCardProps> = ({synth,liked,onToggleLike}) => {
+const SynthCard: FunctionComponent<SynthCardProps> = ({
+  synth,
+  liked,
+  onToggleLike,
+}) => {
   const handleClick = () => {
     onToggleLike(synth.id);
   };
@@ -20,8 +24,8 @@ const SynthCard: FunctionComponent<SynthCardProps> = ({synth,liked,onToggleLike}
   const name =
     synth.source.toLowerCase().includes("bax") ||
     synth.source.toLowerCase().includes("musicstore")
-      ? synth.naam
-      : `${synth.merk} ${synth.naam}`;
+      ? synth.name
+      : `${synth.brand} ${synth.name}`;
 
   // @ts-ignore
   return (
@@ -29,10 +33,10 @@ const SynthCard: FunctionComponent<SynthCardProps> = ({synth,liked,onToggleLike}
       <CardHeader className="pb-0 pt-2 px-4 flex-col items-start flex-grow">
         <h4 className="font-bold text-large text-start flex-grow">{name}</h4>
         <p className="text-tiny uppercase font-bold flex-grow">
-          {synth.prijs ? `€${synth.prijs}` : "geen prijs beschikbaar"}
+          {synth.price ? `€${synth.price}` : "geen prijs beschikbaar"}
         </p>
         <small className="text-default-500 flex-grow">
-          {synth.beschikbaarheid}
+          {synth.availability}
         </small>
       </CardHeader>
       <CardBody className="overflow-visible py-2 flex-grow flex justify-between">
@@ -52,7 +56,7 @@ const SynthCard: FunctionComponent<SynthCardProps> = ({synth,liked,onToggleLike}
             <Image
               alt="Card background"
               className="object-cover rounded-xl flex-grow"
-              src={synth.afbeelding}
+              src={synth.image}
               width="100%"
             />
           </motion.div>
