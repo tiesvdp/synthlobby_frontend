@@ -19,7 +19,7 @@ export default function WishListList() {
   const likedSynths = synths.filter((item) => item.liked);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [backdrop, setBackdrop] = useState<"opaque" | "blur" | "transparent">(
-    "blur",
+    "blur"
   );
 
   const handleSelectionChange = (keys: Selection) => {
@@ -27,13 +27,13 @@ export default function WishListList() {
   };
 
   const filteredLikedSynths = likedSynths.filter((synth) =>
-    selectedKeys.has(synth.id),
+    selectedKeys.has(synth.id)
   );
 
   const totalPrice = useMemo(() => {
     return filteredLikedSynths.reduce(
-      (acc, synth) => acc + Number(synth.prijs || 0),
-      0,
+      (acc, synth) => acc + Number(synth.price || 0),
+      0
     );
   }, [filteredLikedSynths, selectedKeys]);
 
@@ -57,11 +57,11 @@ export default function WishListList() {
             key={synth.id}
             className="border border-gray-300 rounded-lg shadow-sm flex justify-center w-full relative mb-3"
             shouldHighlightOnFocus={false}
-            textValue={synth.naam}
+            textValue={synth.name}
           >
             <div
               className="absolute inset-0 bg-cover bg-center filter blur-sm opacity-20"
-              style={{ backgroundImage: `url(${synth.afbeelding})` }}
+              style={{ backgroundImage: `url(${synth.image})` }}
             />
             <ListboxCard synth={synth} />
           </ListboxItem>

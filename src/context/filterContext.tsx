@@ -34,7 +34,8 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
   const [search, setSearch, debouncedSearch] = useDebouncedState("");
   const [filterType, setFilterType] = useState("");
   const [priceRange, setPriceRange, debouncedPriceRange] = useDebouncedState([
-    50, Infinity,
+    10,
+    Infinity,
   ]);
   const [filterLikes, setFilterLikes] = useState(false);
 

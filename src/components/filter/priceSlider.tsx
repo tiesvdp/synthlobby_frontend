@@ -9,13 +9,13 @@ const PriceSlider: FunctionComponent = () => {
   const handleChange = (newValue: number | number[]) => {
     if (Array.isArray(newValue)) {
       setPriceRange(
-        newValue.map((value) => (value === 3000 ? Infinity : value)),
+        newValue.map((value) => (value === 3000 ? Infinity : value))
       );
     } else {
       setPriceRange(
         newValue === 3000
           ? [priceRange[0], Infinity]
-          : [priceRange[0], newValue],
+          : [priceRange[0], newValue]
       );
     }
   };
@@ -32,8 +32,8 @@ const PriceSlider: FunctionComponent = () => {
         }}
         formatOptions={{ style: "currency", currency: "EUR" }}
         maxValue={3000}
-        minValue={50}
-        defaultValue={[50, 2000]}
+        minValue={10}
+        defaultValue={[10, 2000]}
         renderThumb={({ index, ...props }) => (
           <div
             {...props}
@@ -44,7 +44,7 @@ const PriceSlider: FunctionComponent = () => {
                 "transition-transform bg-gradient-to-br shadow-small rounded-full w-5 h-5 block group-data-[dragging=true]:scale-80",
                 index === 0
                   ? "from-[#FF1CF7] to-[#FF8CF7]"
-                  : "from-[#b249f8] to-[#d249f8]",
+                  : "from-[#b249f8] to-[#d249f8]"
               )}
             />
           </div>

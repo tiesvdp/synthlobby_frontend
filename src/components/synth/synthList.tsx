@@ -30,19 +30,63 @@ const SynthList: FunctionComponent = () => {
 
   // Filtering logic
   const filteredSynths = useMemo(() => {
+    console.log(
+      "Filtering with search:",
+      debouncedSearch,
+      "price range:",
+      debouncedPriceRange,
+      "filterType:",
+      filterType,
+      "filterLikes:",
+      filterLikes
+    );
+
     return synths
-      .filter(({ brand, name }) =>
-        `${brand} ${name}`.toLowerCase().includes(debouncedSearch.toLowerCase())
-      )
-      .filter(
-        ({ price }) =>
-          price >= debouncedPriceRange[0] && price <= debouncedPriceRange[1]
-      )
-      .filter(({ liked }) => (filterLikes ? liked : true))
-      .sort(
-        (a, b) =>
-          ({ asc: a.price - b.price, des: b.price - a.price }[filterType] || 0)
-      );
+      .filter((synth) => {
+        const price = Number(synth.price);
+
+        // Validate price
+        if (isNaN(price)) {
+          console.log(
+            `excluded ${synth.brand} ${synth.name} because price is invalid: ${synth.price}`
+          );
+          return false;
+        }
+        // Search filter
+        if (
+          debouncedSearch &&
+          !`${synth.brand} ${synth.name}`
+            .toLowerCase()
+            .includes(debouncedSearch.toLowerCase())
+        ) {
+          console.log(
+            `excluded ${synth.brand} ${synth.name} because search "${debouncedSearch}" did not match`
+          );
+          return false;
+        }
+        // Price filter
+        if (price < debouncedPriceRange[0] || price > debouncedPriceRange[1]) {
+          console.log(
+            `excluded ${synth.brand} ${synth.name} because price ${price} not in range [${debouncedPriceRange[0]}, ${debouncedPriceRange[1]}]`
+          );
+          return false;
+        }
+        // Likes filter
+        if (filterLikes && !synth.liked) {
+          console.log(
+            `excluded ${synth.brand} ${synth.name} because not liked (filterLikes is on)`
+          );
+          return false;
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        const priceA = Number(a.price);
+        const priceB = Number(b.price);
+        if (filterType === "asc") return priceA - priceB;
+        if (filterType === "des") return priceB - priceA;
+        return 0;
+      });
   }, [synths, debouncedSearch, debouncedPriceRange, filterLikes, filterType]);
 
   // Update pagination and handle page overflow

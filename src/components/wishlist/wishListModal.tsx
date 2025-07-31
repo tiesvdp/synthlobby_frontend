@@ -25,7 +25,12 @@ const ModalPopup: FunctionComponent<ModalPopupProps> = ({
   synths,
 }) => {
   return (
-    <Modal backdrop={backdrop} isOpen={isOpen} onClose={onClose} shouldBlockScroll={false}>
+    <Modal
+      backdrop={backdrop}
+      isOpen={isOpen}
+      onClose={onClose}
+      shouldBlockScroll={false}
+    >
       <ModalContent>
         <>
           <ModalHeader className="flex flex-col gap-1" />
@@ -38,7 +43,7 @@ const ModalPopup: FunctionComponent<ModalPopupProps> = ({
                 href={synth.href}
                 target="blank"
               >
-                {`${synth.naam} - ${synth.beschikbaarheid}`}
+                {`${synth.name} - ${synth.availability}`}
               </Link>
             ))}
           </ModalBody>

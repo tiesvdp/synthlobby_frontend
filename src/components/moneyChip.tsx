@@ -1,7 +1,7 @@
 import { Chip } from "@heroui/react";
 import { FunctionComponent } from "react";
 
-const MoneyChip: FunctionComponent<{ prijs: number }> = ({ prijs }) => {
+const MoneyChip: FunctionComponent<{ price: number }> = ({ price }) => {
   return (
     <Chip
       classNames={{
@@ -10,7 +10,7 @@ const MoneyChip: FunctionComponent<{ prijs: number }> = ({ prijs }) => {
       }}
       variant="shadow"
     >
-      <span>€ {prijs}</span>
+      <span>€ {price}</span>
     </Chip>
   );
 };

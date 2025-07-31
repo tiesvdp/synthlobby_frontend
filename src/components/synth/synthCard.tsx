@@ -47,19 +47,28 @@ const SynthCard: FunctionComponent<SynthCardProps> = ({
             </div>
           }
         >
-          <motion.div
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-full rounded-xl"
-            initial={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
+          <a
+            href={synth.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full rounded-xl block"
+            tabIndex={0}
+            aria-label={`Open ${name} on source site`}
           >
-            <Image
-              alt="Card background"
-              className="object-cover rounded-xl flex-grow"
-              src={synth.image}
-              width="100%"
-            />
-          </motion.div>
+            <motion.div
+              animate={{ opacity: 1, scale: 1 }}
+              className="w-full rounded-xl"
+              initial={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Image
+                alt="Card background"
+                className="object-cover rounded-xl flex-grow"
+                src={synth.image}
+                width="100%"
+              />
+            </motion.div>
+          </a>
         </Suspense>
         <div className="flex flex-column items-center">
           <Button
