@@ -58,7 +58,7 @@ export const Navbar = () => {
       </NavbarContent>
 
       {/* Desktop: LastRefreshed just left of icons */}
-      <NavbarContent className="sm:flex items-center pb-1" justify="end">
+      <NavbarContent className="hidden lg:flex items-center pb-1" justify="end">
         <React.Suspense fallback={<FallBack text="Loading..." />}>
           <LastRefreshed />
         </React.Suspense>
@@ -122,11 +122,6 @@ export const Navbar = () => {
             </Link>
           </NavbarMenuItem>
         ))}
-        <div className="mt-8 flex justify-center">
-          <React.Suspense fallback={<FallBack text="Loading..." />}>
-            <LastRefreshed />
-          </React.Suspense>
-        </div>
       </NavbarMenu>
     </NextUINavbar>
   );

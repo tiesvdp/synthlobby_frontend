@@ -1,8 +1,8 @@
-import { useNavigate } from "react-router-dom"
-import { motion } from "framer-motion"
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 export function CategoriesSection() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const categories = [
     "Analog Synths",
@@ -15,10 +15,10 @@ export function CategoriesSection() {
     "Samplers",
     "Eurorack",
     "Vintage",
-  ]
+  ];
 
   return (
-    <section className="w-full py-20 relative ">
+    <section className="w-full lg:my-16 my-8 relative ">
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNjMDI2ZDMiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTAgMGg0MHY0MEgwVjB6bTQwIDQwVjBoNDB2NDBINDB6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-50 z-0"></div>
 
       <div className="container mx-auto px-4 text-center relative z-10">
@@ -56,5 +56,5 @@ export function CategoriesSection() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }

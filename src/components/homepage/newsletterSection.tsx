@@ -1,20 +1,20 @@
-import { useState } from "react"
-import { Button } from "@heroui/button"
-import { Input } from "@heroui/input"
-import { motion } from "framer-motion"
+import { useState } from "react";
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
+import { motion } from "framer-motion";
 
 export function NewsletterSection() {
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState("");
 
   const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     // Handle newsletter subscription
-    alert(`Thanks for subscribing with ${email}!`)
-    setEmail("")
-  }
+    alert(`Thanks for subscribing with ${email}!`);
+    setEmail("");
+  };
 
   return (
-    <section className="w-full py-20 relative">
+    <section className="w-full lg:my-16 my-12 relative">
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -30,13 +30,18 @@ export function NewsletterSection() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative z-10">
             <div>
               <h3 className="text-2xl font-bold mb-2">
-                Stay Updated on <span className="text-[#c026d3]">Price Drops</span>
+                Stay Updated on{" "}
+                <span className="text-[#c026d3]">Price Drops</span>
               </h3>
               <p className="text-default-500 mt-2">
-                Subscribe to our newsletter and never miss a deal on your dream synth.
+                Subscribe to our newsletter and never miss a deal on your dream
+                synth.
               </p>
             </div>
-            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-4">
+            <form
+              onSubmit={handleSubscribe}
+              className="flex flex-col sm:flex-row gap-4"
+            >
               <Input
                 type="email"
                 label="Email"
@@ -57,5 +62,5 @@ export function NewsletterSection() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
