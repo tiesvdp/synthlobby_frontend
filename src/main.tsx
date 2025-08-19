@@ -8,6 +8,26 @@ import { Provider } from "./provider.tsx";
 import "@/styles/globals.css";
 import { SynthProvider } from "@/context/synthContext.tsx";
 import * as React from "react";
+import {
+  Chart as ChartJS,
+  LineElement,
+  PointElement,
+  LinearScale,
+  CategoryScale,
+  Tooltip,
+  Legend,
+  Filler,
+} from "chart.js";
+
+ChartJS.register(
+  LineElement,
+  PointElement,
+  LinearScale,
+  CategoryScale,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,5 +48,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         </BrowserRouter>
       </SynthProvider>
     </QueryClientProvider>
-  </React.StrictMode>,
+  </React.StrictMode>
 );

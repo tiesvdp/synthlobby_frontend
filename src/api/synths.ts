@@ -12,10 +12,12 @@ const getSynths = async (): Promise<Synth[]> => {
   const response = await fetch("https://sb.tiesvdp.be/synths");
   if (!response.ok) throw new Error("Failed to fetch synths");
   const data = await response.json();
-  return data.map((item: Synth) => ({
-    ...item,
-    id: item.id ?? uuidv4(),
-  })) as Synth[];
+  return data
+    .map((item: Synth) => ({
+      ...item,
+      id: item.id ?? uuidv4(),
+    }))
+    .sort((a: Synth, b: Synth) => a.id.localeCompare(b.id)) as Synth[];
 };
 
 // Fetch brands from remote API

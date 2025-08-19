@@ -8,4 +8,8 @@ export type Synth = {
   source: string;
   id: string;
   liked?: boolean;
+  prices: {
+    price: number;
+    date: string;
+  }[];
 };

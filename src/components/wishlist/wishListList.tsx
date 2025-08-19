@@ -8,10 +8,12 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { Button } from "@heroui/button";
+import { Line } from "react-chartjs-2";
 
 import ListboxCard from "@/components/wishlist/listboxCard.tsx";
 import { useSynths } from "@/context/synthContext.tsx";
 import ModalPopup from "@/components/wishlist/wishListModal.tsx";
+import { TooltipItem } from "chart.js";
 
 export default function WishListList() {
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
@@ -42,8 +44,82 @@ export default function WishListList() {
     onOpen();
   }
 
+  // Gather all unique dates (max 20, sorted ascending)
+  const allDates = Array.from(
+    new Set(
+      likedSynths.flatMap((synth) => synth.prices?.map((p) => p.date) ?? [])
+    )
+  )
+    .sort()
+    .slice(-20);
+
+  // Prepare datasets for each liked synth
+  const datasets = likedSynths.map((synth, idx) => {
+    // Map prices to the correct date order, fill with null if missing
+    const priceMap = Object.fromEntries(
+      (synth.prices ?? []).map((p) => [p.date, p.price])
+    );
+    return {
+      label: synth.name + " (" + synth.source + ")",
+      data: allDates.map((date) =>
+        priceMap[date] !== undefined ? priceMap[date] : null
+      ),
+      fill: false,
+      borderColor: `hsl(${(idx * 60) % 360}, 80%, 60%)`,
+      backgroundColor: `hsl(${(idx * 60) % 360}, 80%, 60%)`,
+      tension: 0.3,
+      pointRadius: 5,
+    };
+  });
+
+  // Find min/max for Y axis
+  const allPrices = likedSynths.flatMap((synth) =>
+    (synth.prices ?? []).map((p) => p.price)
+  );
+  const minPrice = Math.min(...allPrices);
+  const maxPrice = Math.max(...allPrices);
+  const yMargin = Math.max(10, Math.round((maxPrice - minPrice) * 0.1));
+
+  const chartData = {
+    labels: allDates,
+    datasets,
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: { display: true, position: "top" as const },
+      tooltip: {
+        mode: "nearest" as const,
+        intersect: true,
+        callbacks: {
+          label: function (context: TooltipItem<"line">) {
+            return `${context.dataset.label}: €${context.parsed.y}`;
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        title: { display: true, text: "Date" },
+        ticks: { autoSkip: true, maxTicksLimit: 20 },
+      },
+      y: {
+        title: { display: true, text: "Euro (€)" },
+        min: minPrice - yMargin,
+        max: maxPrice + yMargin,
+      },
+    },
+    layout: {
+      padding: 24,
+    },
+  };
+
   return (
     <div className="grid grid-cols-2 gap-6 auto-rows-fr mt-0">
+      <div className="col-span-2 mb-8">
+        <Line data={chartData} options={chartOptions} />
+      </div>
       <Listbox
         aria-label="Keyboard wishlist"
         className="w-full"

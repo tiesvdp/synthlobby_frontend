@@ -12,17 +12,8 @@ export function SynthCarousel() {
   const { synths, setSynths } = useSynths();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [featuredSynths, setFeaturedSynths] = useState<Synth[]>([]);
   const [isHovering, setIsHovering] = useState(false);
-
-  const musicstoreSynths = synths
-    .filter((synth) => synth.source?.toLowerCase().includes("musicstore"))
-    .reverse();
-
-  useEffect(() => {
-    const shuffled = [...musicstoreSynths].sort(() => Math.random() - 0.5);
-    setFeaturedSynths(shuffled.slice(0, 8));
-  }, [synths]);
+  const featuredSynths = synths.slice(0, 8);
 
   // Number of cards to show based on screen size
   const [cardsToShow, setCardsToShow] = useState(3);
@@ -43,12 +34,12 @@ export function SynthCarousel() {
     window.addEventListener("resize", handleResize);
 
     // Set loaded state
-    if (synths.length > 0) {
+    if (featuredSynths.length > 0) {
       setIsLoaded(true);
     }
 
     return () => window.removeEventListener("resize", handleResize);
-  }, [synths]);
+  }, [featuredSynths]);
 
   const handleNext = () => {
     setCurrentIndex((prevIndex) =>
