@@ -66,7 +66,7 @@ const getBrands = async (search: string | undefined): Promise<string[]> => {
 
 // Fetch last scrape time from remote API
 const getLastScrape = async (): Promise<string> => {
-  const response = await fetch("https://sb.tiesvdp.be/last-scrape");
+  const response = await fetch("https://sb.tiesvdp.be/logs/last-scrape");
   if (!response.ok) throw new Error("Failed to fetch last scrape");
   const data = await response.json();
   return data.lastScrape as string;
