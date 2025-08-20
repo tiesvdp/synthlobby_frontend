@@ -16,7 +16,7 @@ const lazyWithDelay = (importFn: () => Promise<any>, ms: number) =>
 // Gotta show off the skeletons, hehe
 const SynthList = lazyWithDelay(
   () => import("@/components/synth/synthList.tsx"),
-  500,
+  500
 );
 
 export default function SynthsPage() {

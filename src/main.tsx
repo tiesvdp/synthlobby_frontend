@@ -26,7 +26,13 @@ ChartJS.register(
   CategoryScale,
   Tooltip,
   Legend,
-  Filler
+  Filler,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend
 );
 
 const queryClient = new QueryClient({

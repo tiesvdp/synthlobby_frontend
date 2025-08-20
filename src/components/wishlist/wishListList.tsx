@@ -1,178 +1,374 @@
-import { useState, useMemo } from "react";
-import {
-  Card,
-  CardBody,
-  Listbox,
-  ListboxItem,
-  Selection,
-  useDisclosure,
-} from "@heroui/react";
-import { Button } from "@heroui/button";
+import { useMemo, useState } from "react";
+import { Card, CardBody } from "@heroui/react";
 import { Line } from "react-chartjs-2";
-
-import ListboxCard from "@/components/wishlist/listboxCard.tsx";
 import { useSynths } from "@/context/synthContext.tsx";
-import ModalPopup from "@/components/wishlist/wishListModal.tsx";
-import { TooltipItem } from "chart.js";
+import {
+  Chart as ChartJS,
+  LineElement,
+  PointElement,
+  LinearScale,
+  CategoryScale,
+  Tooltip,
+  Legend,
+  TooltipItem,
+} from "chart.js";
+import { motion, AnimatePresence } from "framer-motion";
+import { IoClose } from "react-icons/io5";
+import {
+  subDays,
+  format,
+  subWeeks,
+  startOfWeek,
+  isSameDay,
+  subMonths,
+  startOfMonth,
+  subYears,
+  startOfYear,
+} from "date-fns";
 
-export default function WishListList() {
-  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
-  const { synths } = useSynths();
-  const likedSynths = synths.filter((item) => item.liked);
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [backdrop, setBackdrop] = useState<"opaque" | "blur" | "transparent">(
-    "blur"
-  );
+ChartJS.register(
+  LineElement,
+  PointElement,
+  LinearScale,
+  CategoryScale,
+  Tooltip,
+  Legend
+);
 
-  const handleSelectionChange = (keys: Selection) => {
-    setSelectedKeys(new Set(keys as unknown as string[]));
-  };
+type PricePoint = {
+  date: Date;
+  price: number;
+};
 
-  const filteredLikedSynths = likedSynths.filter((synth) =>
-    selectedKeys.has(synth.id)
-  );
+const generatePriceHistory = (
+  basePrice: number,
+  days: number
+): PricePoint[] => {
+  const history: PricePoint[] = [];
+  let currentPrice = Math.round(basePrice / 10) * 10 - 1;
+  const today = new Date();
+  let i = days - 1;
 
-  const totalPrice = useMemo(() => {
-    return filteredLikedSynths.reduce(
-      (acc, synth) => acc + Number(synth.price || 0),
-      0
-    );
-  }, [filteredLikedSynths, selectedKeys]);
+  while (i >= 0) {
+    const randomFactor = Math.random();
+    let duration = Math.floor(Math.random() * 21) + 14;
 
-  function handleClick() {
-    setBackdrop("blur");
-    onOpen();
+    if (randomFactor > 0.95) {
+      const change =
+        (Math.floor(Math.random() * 5) + 2) *
+        10 *
+        (Math.random() > 0.5 ? 1 : -1);
+      currentPrice = Math.round((currentPrice + change) / 10) * 10 - 1;
+    } else if (randomFactor > 0.85) {
+      const priceBeforeSale = currentPrice;
+      const salePrice = Math.round((priceBeforeSale * 0.9) / 5) * 5 - 1;
+      const saleDuration = Math.floor(Math.random() * 6) + 3;
+
+      for (let j = 0; j < saleDuration && i >= 0; j++) {
+        history.push({ date: subDays(today, i), price: salePrice });
+        i--;
+      }
+      currentPrice = priceBeforeSale;
+    } else {
+      const change = (Math.floor(Math.random() * 3) - 1) * 5;
+      currentPrice += change;
+    }
+
+    currentPrice = Math.max(Math.round(basePrice * 0.75), currentPrice);
+    currentPrice = Math.min(Math.round(basePrice * 1.4), currentPrice);
+
+    for (let j = 0; j < duration && i >= 0; j++) {
+      history.push({ date: subDays(today, i), price: currentPrice });
+      i--;
+    }
   }
 
-  // Gather all unique dates (max 20, sorted ascending)
-  const allDates = Array.from(
-    new Set(
-      likedSynths.flatMap((synth) => synth.prices?.map((p) => p.date) ?? [])
-    )
-  )
-    .sort()
-    .slice(-20);
+  return history.sort((a, b) => a.date.getTime() - b.date.getTime());
+};
 
-  // Prepare datasets for each liked synth
-  const datasets = likedSynths.map((synth, idx) => {
-    // Map prices to the correct date order, fill with null if missing
-    const priceMap = Object.fromEntries(
-      (synth.prices ?? []).map((p) => [p.date, p.price])
-    );
-    return {
-      label: synth.name + " (" + synth.source + ")",
-      data: allDates.map((date) =>
-        priceMap[date] !== undefined ? priceMap[date] : null
+type Granularity = "day" | "week" | "month" | "year";
+
+const GranularityButton = ({
+  mode,
+  label,
+  granularity,
+  setGranularity,
+}: {
+  mode: Granularity;
+  label: string;
+  granularity: Granularity;
+  setGranularity: (g: Granularity) => void;
+}) => (
+  <button
+    onClick={() => setGranularity(mode)}
+    className={`px-3 py-1 text-xs rounded-md transition-colors ${
+      granularity === mode
+        ? "bg-purple-700 text-white"
+        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+    }`}
+  >
+    {label}
+  </button>
+);
+
+export default function WishListList() {
+  // --- DEVELOPMENT TOGGLE ---
+  const USE_FAKE_DATA = false;
+
+  const { synths, setSynths } = useSynths();
+  const likedSynths = synths.filter((item) => item.liked);
+  const [granularity, setGranularity] = useState<Granularity>("day");
+
+  const { chartData, chartOptions } = useMemo(() => {
+    let synthsWithPriceHistory;
+
+    if (USE_FAKE_DATA) {
+      synthsWithPriceHistory = likedSynths.map((synth) => ({
+        ...synth,
+        prices: generatePriceHistory(synth.price || 1000, 365 * 5),
+      }));
+    } else {
+      synthsWithPriceHistory = likedSynths.map((synth) => ({
+        ...synth,
+        prices: (synth.prices || []).map((p) => ({
+          ...p,
+          date: new Date(p.date),
+        })),
+      }));
+    }
+
+    const today = new Date();
+    const synthsWithFilteredHistory = synthsWithPriceHistory.map((synth) => {
+      let filteredPrices: PricePoint[];
+      switch (granularity) {
+        case "day":
+          filteredPrices = synth.prices.slice(-5);
+          break;
+        case "week":
+          filteredPrices = synth.prices.slice(-35);
+          break;
+        case "month":
+          const fiveMonthsAgo = startOfMonth(subMonths(today, 4));
+          filteredPrices = synth.prices.filter((p) => p.date >= fiveMonthsAgo);
+          break;
+        case "year":
+        default:
+          filteredPrices = synth.prices;
+          break;
+      }
+      return { ...synth, prices: filteredPrices };
+    });
+
+    const allDateObjects = [
+      ...new Set(
+        synthsWithFilteredHistory.flatMap((s) =>
+          s.prices.map((p) => format(p.date, "yyyy-MM-dd"))
+        )
       ),
-      fill: false,
-      borderColor: `hsl(${(idx * 60) % 360}, 80%, 60%)`,
-      backgroundColor: `hsl(${(idx * 60) % 360}, 80%, 60%)`,
-      tension: 0.3,
-      pointRadius: 5,
+    ]
+      .sort()
+      .map((dateStr) => new Date(dateStr));
+
+    if (allDateObjects.length === 0) {
+      return { chartData: { labels: [], datasets: [] }, chartOptions: {} };
+    }
+
+    const datasets = synthsWithFilteredHistory.map((synth, idx) => {
+      const priceMap = new Map(
+        synth.prices.map((p) => [format(p.date, "yyyy-MM-dd"), p.price])
+      );
+      const color = `hsl(${(idx * 360) / likedSynths.length}, 70%, 50%)`;
+      return {
+        label: `${synth.name} (${synth.source})`,
+        data: allDateObjects.map(
+          (date) => priceMap.get(format(date, "yyyy-MM-dd")) ?? null
+        ),
+        fill: false,
+        borderColor: color,
+        backgroundColor: color,
+        tension: 0,
+        pointRadius: granularity === "day" ? 4 : 0,
+        pointBorderColor: "#fff",
+        pointBorderWidth: 1,
+        pointHitRadius: 10,
+      };
+    });
+
+    const chartData = {
+      labels: allDateObjects.map((d) => format(d, "dd/MM")),
+      datasets,
     };
-  });
 
-  // Find min/max for Y axis
-  const allPrices = likedSynths.flatMap((synth) =>
-    (synth.prices ?? []).map((p) => p.price)
-  );
-  const minPrice = Math.min(...allPrices);
-  const maxPrice = Math.max(...allPrices);
-  const yMargin = Math.max(10, Math.round((maxPrice - minPrice) * 0.1));
-
-  const chartData = {
-    labels: allDates,
-    datasets,
-  };
-
-  const chartOptions = {
-    responsive: true,
-    plugins: {
-      legend: { display: true, position: "top" as const },
-      tooltip: {
-        mode: "nearest" as const,
-        intersect: true,
-        callbacks: {
-          label: function (context: TooltipItem<"line">) {
-            return `${context.dataset.label}: €${context.parsed.y}`;
+    const chartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position: "top" as const },
+        tooltip: {
+          mode: "nearest" as const,
+          intersect: false,
+          callbacks: {
+            label: function (context: TooltipItem<"line">) {
+              return `${context.dataset.label}: €${context.parsed.y.toFixed(
+                2
+              )}`;
+            },
           },
         },
       },
-    },
-    scales: {
-      x: {
-        title: { display: true, text: "Date" },
-        ticks: { autoSkip: true, maxTicksLimit: 20 },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: {
+            autoSkip: false,
+            maxRotation: 0,
+            callback: function (_: any, index: number) {
+              const currentDate = allDateObjects[index];
+              if (!currentDate) return null;
+
+              if (granularity === "day") {
+                return format(currentDate, "d MMM");
+              }
+
+              let tickDates: Date[] = [];
+              for (let i = 0; i < 5; i++) {
+                if (granularity === "week")
+                  tickDates.push(startOfWeek(subWeeks(today, i)));
+                if (granularity === "month")
+                  tickDates.push(startOfMonth(subMonths(today, i)));
+                if (granularity === "year")
+                  tickDates.push(startOfYear(subYears(today, i)));
+              }
+              const isTickDate = tickDates.some((tickDate) =>
+                isSameDay(currentDate, tickDate)
+              );
+
+              if (isTickDate) {
+                if (granularity === "week") return format(currentDate, "dd/MM");
+                if (granularity === "month")
+                  return format(currentDate, "MMM yy");
+                if (granularity === "year") return format(currentDate, "yyyy");
+              }
+              return null;
+            },
+          },
+        },
+        y: {
+          grid: { color: "#e9e9e9" },
+          border: { dash: [4, 4] },
+          ticks: {
+            callback: (value: any) => `€${value}`,
+            autoSkip: true,
+            maxTicksLimit: 8,
+          },
+        },
       },
-      y: {
-        title: { display: true, text: "Euro (€)" },
-        min: minPrice - yMargin,
-        max: maxPrice + yMargin,
-      },
-    },
-    layout: {
-      padding: 24,
-    },
+    };
+
+    return { chartData, chartOptions };
+  }, [likedSynths, granularity]);
+
+  const totalPrice = useMemo(() => {
+    return likedSynths.reduce(
+      (acc, synth) => acc + Number(synth.price || 0),
+      0
+    );
+  }, [likedSynths]);
+
+  const handleRemove = (id: string) => {
+    setSynths((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, liked: false } : s))
+    );
   };
 
   return (
-    <div className="grid grid-cols-2 gap-6 auto-rows-fr mt-0">
-      <div className="col-span-2 mb-8">
-        <Line data={chartData} options={chartOptions} />
-      </div>
-      <Listbox
-        aria-label="Keyboard wishlist"
-        className="w-full"
-        selectedKeys={selectedKeys}
-        selectionMode="multiple"
-        variant="flat"
-        onSelectionChange={handleSelectionChange}
-      >
-        {likedSynths.map((synth) => (
-          <ListboxItem
-            key={synth.id}
-            className="border border-gray-300 rounded-lg shadow-sm flex justify-center w-full relative mb-3"
-            shouldHighlightOnFocus={false}
-            textValue={synth.name}
-          >
-            <div
-              className="absolute inset-0 bg-cover bg-center filter blur-sm opacity-20"
-              style={{ backgroundImage: `url(${synth.image})` }}
-            />
-            <ListboxCard synth={synth} />
-          </ListboxItem>
-        ))}
-      </Listbox>
-      <div>
-        <Card>
-          <CardBody>
-            <p className="text-center font-medium text-2xl">
-              Total price: €{totalPrice}
-            </p>
-            <Button
-              className={`bg-gradient-to-b from-[#FF1CF7] to-[#b249f8] shadow-lg w-fit mx-auto mt-4`}
-              radius="full"
-              size="lg"
-              variant="shadow"
-              onClick={handleClick}
-            >
-              <span
-                className={
-                  "tracking-tight inline font-button text-2xl lg:text-3xl leading-9 text-white"
-                }
-              >
-                Buy &apos;em all!
-              </span>
-            </Button>
-          </CardBody>
-        </Card>
-      </div>
-      <ModalPopup
-        backdrop={backdrop}
-        isOpen={isOpen}
-        synths={filteredLikedSynths}
-        onClose={onClose}
-      />
-    </div>
+    <Card className="w-full flex flex-col py-4 flex-grow min-h-[600px] bg-white/80 shadow-lg overflow-hidden">
+      <CardBody className="flex flex-col items-center w-full">
+        <div className="flex flex-col-reverse md:flex-row w-full gap-8 items-stretch justify-center">
+          <div className="w-full md:w-2/3 flex-shrink-0 min-h-[350px] md:min-h-[500px] flex flex-col">
+            <div className="flex justify-end gap-2 mb-2 px-4">
+              <GranularityButton
+                mode="day"
+                label="D"
+                granularity={granularity}
+                setGranularity={setGranularity}
+              />
+              <GranularityButton
+                mode="week"
+                label="W"
+                granularity={granularity}
+                setGranularity={setGranularity}
+              />
+              <GranularityButton
+                mode="month"
+                label="M"
+                granularity={granularity}
+                setGranularity={setGranularity}
+              />
+              <GranularityButton
+                mode="year"
+                label="Y"
+                granularity={granularity}
+                setGranularity={setGranularity}
+              />
+            </div>
+            <div className="relative w-full flex-grow">
+              {likedSynths.length > 0 ? (
+                <Line data={chartData} options={chartOptions as any} />
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  Add synths to your wishlist to see a price comparison.
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="w-full md:w-1/3 flex flex-col items-center md:items-start">
+            <h3 className="text-lg font-semibold mb-4 text-[#7c1fa2] text-center md:text-left">
+              Your Wishlist
+            </h3>
+            <ul className="w-full flex flex-col gap-3 overflow-hidden">
+              <AnimatePresence>
+                {likedSynths.map((synth) => (
+                  <motion.li
+                    key={synth.id}
+                    initial={{ opacity: 0, x: 40 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 40 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex items-center justify-between bg-[#f6edfa] rounded-lg px-3 py-2 shadow-sm"
+                  >
+                    <div>
+                      <div className="truncate max-w-[270px] text-sm font-medium text-[#7c1fa2] -mb-1">
+                        {synth.name}
+                      </div>
+                      <div>
+                        <span
+                          className={"text-sm font-medium text-default-600"}
+                        >
+                          {synth.source}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleRemove(synth.id)}
+                      className="ml-2 text-[#7c1fa2] hover:text-pink-600 transition-colors"
+                      aria-label={`Remove ${synth.name} from wishlist`}
+                    >
+                      <IoClose size={22} />
+                    </button>
+                  </motion.li>
+                ))}
+              </AnimatePresence>
+            </ul>
+          </div>
+        </div>
+        {likedSynths.length > 0 && (
+          <p className="text-center font-medium text-2xl mt-10">
+            Total price:{" "}
+            <span className="font-bold text-[#7c1fa2]">€{totalPrice}</span>
+          </p>
+        )}
+      </CardBody>
+    </Card>
   );
 }
