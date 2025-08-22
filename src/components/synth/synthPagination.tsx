@@ -18,14 +18,18 @@ const SynthPagination: FunctionComponent = () => {
     }
   };
 
+  if (totalPages === 0) {
+    return null;
+  }
+
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex justify-between gap-4">
       <Button
         className="flex-grow max-w-40"
         disabled={currentPage === 1}
         startContent={<i className="fa-solid fa-chevron-left" />}
         variant="ghost"
-        onClick={handlePrevious}
+        onPress={handlePrevious}
       >
         Previous
       </Button>
@@ -37,7 +41,7 @@ const SynthPagination: FunctionComponent = () => {
         disabled={currentPage === totalPages}
         endContent={<i className="fa-solid fa-chevron-right" />}
         variant="ghost"
-        onClick={handleNext}
+        onPress={handleNext}
       >
         Next
       </Button>

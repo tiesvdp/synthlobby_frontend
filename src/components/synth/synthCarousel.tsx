@@ -7,6 +7,7 @@ import { Button } from "@heroui/button";
 import { Card } from "@heroui/card";
 import type { Synth } from "@/models/synths.ts";
 import { motion } from "framer-motion";
+import { calculateRecentPriceChange } from "@/utils/priceUtils.ts";
 
 export function SynthCarousel() {
   const { synths, setSynths } = useSynths();
@@ -14,12 +15,38 @@ export function SynthCarousel() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const featuredSynths = synths.slice(0, 8);
+  const changedSynths = [];
 
-  // Number of cards to show based on screen size
+  for (const synth of synths) {
+    if (!Array.isArray(synth.prices) || synth.prices.length < 2) continue;
+
+    const sortedPrices = [...synth.prices].sort((a, b) =>
+      b.date.localeCompare(a.date)
+    );
+
+    const recent = sortedPrices.slice(0, 5);
+    const pricesOnly = recent.map((p) => p.price);
+    const uniquePrices = new Set(pricesOnly);
+
+    if (uniquePrices.size > 1) {
+      let maxChange = 0;
+      for (let i = 1; i < pricesOnly.length; i++) {
+        const prev = pricesOnly[i];
+        const curr = pricesOnly[i - 1];
+        if (prev && curr && prev !== 0) {
+          const relChange = Math.abs((curr - prev) / prev);
+          if (relChange > maxChange) maxChange = relChange;
+        }
+      }
+      changedSynths.push({ ...synth, maxRelativeChange: maxChange });
+    }
+  }
+
+  changedSynths.sort((a, b) => b.maxRelativeChange - a.maxRelativeChange);
+
   const [cardsToShow, setCardsToShow] = useState(3);
 
   useEffect(() => {
-    // Set cards to show based on window width
     const handleResize = () => {
       if (window.innerWidth < 640) {
         setCardsToShow(1);
@@ -33,7 +60,6 @@ export function SynthCarousel() {
     handleResize();
     window.addEventListener("resize", handleResize);
 
-    // Set loaded state
     if (featuredSynths.length > 0) {
       setIsLoaded(true);
     }
@@ -63,18 +89,17 @@ export function SynthCarousel() {
     );
   };
 
-  // Auto-advance carousel
   useEffect(() => {
-    if (isHovering) return; // Don't auto-advance when user is hovering
+    if (isHovering) return;
 
     const interval = setInterval(() => {
       handleNext();
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [currentIndex, isHovering, featuredSynths.length]);
+  }, [currentIndex, isHovering, changedSynths.length]);
 
-  if (!isLoaded || featuredSynths.length === 0) {
+  if (!isLoaded || changedSynths.length === 0) {
     return (
       <div className="w-full flex justify-center items-center py-20">
         <div className="animate-pulse flex flex-col items-center">
@@ -85,8 +110,7 @@ export function SynthCarousel() {
     );
   }
 
-  // If we don't have enough musicstore synths, show a message
-  if (featuredSynths.length < 3) {
+  if (changedSynths.length < 3) {
     return (
       <div className="text-center py-10">
         <p>Not enough synths available. Check back soon!</p>
@@ -100,7 +124,6 @@ export function SynthCarousel() {
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      {/* Carousel container with shadow and border */}
       <div className="rounded-xl overflow-hidden shadow-lg border border-purple-100 bg-white">
         <div className="flex overflow-hidden">
           <motion.div
@@ -109,8 +132,11 @@ export function SynthCarousel() {
             animate={{ x: `-${currentIndex * (100 / cardsToShow)}%` }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            {featuredSynths.map((synth) => {
+            {changedSynths.map((synth) => {
               const name = synth.name || `${synth.brand} ${synth.name}`;
+
+              const { currentPrice, previousPrice, percentChange } =
+                calculateRecentPriceChange(synth.prices);
 
               return (
                 <motion.div
@@ -122,18 +148,27 @@ export function SynthCarousel() {
                 >
                   <Card className="overflow-hidden border-none shadow-none h-full">
                     <div className="relative pt-[75%] bg-default-100 rounded-t-lg overflow-hidden">
-                      <img
-                        alt={name}
-                        className="object-cover absolute top-0 left-0 w-full h-full transition-transform duration-500 hover:scale-110"
-                        src={synth.image || "/placeholder.svg"}
-                      />
+                      <a
+                        href={synth.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full rounded-xl block cursor-pointer"
+                        tabIndex={0}
+                        aria-label={`Open ${name} on source site`}
+                      >
+                        <img
+                          alt={name}
+                          className="object-cover absolute top-0 left-0 w-full h-full transition-transform duration-500 hover:scale-110"
+                          src={synth.image || "/placeholder.svg"}
+                        />
+                      </a>
                       <div className="absolute top-2 right-2">
                         <Button
                           isIconOnly
                           aria-label="Like"
                           className="bg-white/80 backdrop-blur-sm"
                           size="sm"
-                          onClick={() => handleToggleLike(synth.id)}
+                          onPress={() => handleToggleLike(synth.id)}
                         >
                           <HeartIcon filled={synth.liked} />
                         </Button>
@@ -147,11 +182,32 @@ export function SynthCarousel() {
                         <p className="text-default-500 text-sm">
                           {synth.source}
                         </p>
-                        <p className="font-bold text-lg">
-                          {synth.price
-                            ? `€${synth.price}`
-                            : "Price unavailable"}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          {previousPrice !== null &&
+                            previousPrice !== currentPrice && (
+                              <span className="text-gray-400 text-base line-through font-medium">
+                                €{previousPrice}
+                              </span>
+                            )}
+                          {currentPrice !== null && (
+                            <span className="font-bold text-xl text-[#c026d3]">
+                              €{currentPrice}
+                            </span>
+                          )}
+                          {percentChange !== null &&
+                            previousPrice !== currentPrice && (
+                              <span
+                                className={`ml-2 px-2 py-1 rounded text-xs font-semibold ${
+                                  percentChange > 0
+                                    ? "bg-red-100 text-red-700"
+                                    : "bg-green-100 text-green-700"
+                                }`}
+                              >
+                                {percentChange > 0 ? "+" : ""}
+                                {percentChange.toFixed(1)}%
+                              </span>
+                            )}
+                        </div>
                       </div>
                     </div>
                   </Card>
@@ -162,14 +218,13 @@ export function SynthCarousel() {
         </div>
       </div>
 
-      {/* Navigation controls - centered with arrows on either side of dots */}
       <div className="flex justify-center items-center mt-4 gap-4">
         <Button
           isIconOnly
           className="bg-white shadow-md hover:bg-purple-50 transition-colors"
           size="sm"
           radius="full"
-          onClick={handlePrev}
+          onPress={handlePrev}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -186,7 +241,6 @@ export function SynthCarousel() {
           </svg>
         </Button>
 
-        {/* Dots indicator */}
         <div className="flex justify-center gap-1">
           {Array.from({
             length: Math.ceil(featuredSynths.length - cardsToShow + 1),
@@ -206,7 +260,7 @@ export function SynthCarousel() {
           className="bg-white shadow-md hover:bg-purple-50 transition-colors"
           size="sm"
           radius="full"
-          onClick={handleNext}
+          onPress={handleNext}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

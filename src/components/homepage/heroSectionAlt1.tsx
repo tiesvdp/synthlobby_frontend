@@ -1,12 +1,12 @@
-import { Button } from "@heroui/button"
-import { useNavigate } from "react-router-dom"
-import { motion } from "framer-motion"
+import { Button } from "@heroui/button";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 export function HeroSectionAlt1() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   function handleClick() {
-    navigate("/synths")
+    navigate("/synths");
   }
 
   return (
@@ -26,18 +26,23 @@ export function HeroSectionAlt1() {
             className="flex flex-col items-start text-white"
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Ditch the hunt! <span className="text-[#d8b4fe]">the cheapest keyboards,</span>{" "}
+              Ditch the hunt!{" "}
+              <span className="text-[#d8b4fe]">the cheapest keyboards,</span>{" "}
               <span className="whitespace-nowrap">curated for you.</span>
             </h1>
-            <p className="text-lg text-gray-200 mb-6">SynthLobby scans the web for the best deals.</p>
+            <p className="text-lg text-gray-200 mb-6">
+              SynthLobby scans the web for the best deals.
+            </p>
             <Button
               className="bg-gradient-to-b from-[#FF1CF7] to-[#b249f8] shadow-lg"
               radius="full"
               size="lg"
               variant="shadow"
-              onClick={handleClick}
+              onPress={handleClick}
             >
-              <span className="font-medium text-white text-lg">Explore Synths</span>
+              <span className="font-medium text-white text-lg">
+                Explore Synths
+              </span>
             </Button>
           </motion.div>
 
@@ -55,13 +60,17 @@ export function HeroSectionAlt1() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#7c3aed]/90 via-[#8b5cf6]/50 to-transparent"></div>
               <div className="absolute bottom-4 left-4 right-4">
-                <p className="text-white font-bold text-xl">Find your perfect sound</p>
-                <p className="text-gray-200">Compare prices across all major retailers</p>
+                <p className="text-white font-bold text-xl">
+                  Find your perfect sound
+                </p>
+                <p className="text-gray-200">
+                  Compare prices across all major retailers
+                </p>
               </div>
             </div>
           </motion.div>
         </div>
       </div>
     </section>
-  )
+  );
 }

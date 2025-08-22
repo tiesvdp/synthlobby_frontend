@@ -8,15 +8,22 @@ import {
 import { motion } from "framer-motion";
 import { Synth } from "@/models/synths.ts";
 import SynthCard from "@/components/synth/synthCard.tsx";
-import { useSynths } from "@/context/synthContext.tsx";
 import { useFilter } from "@/context/filterContext.tsx";
 import { usePagination } from "@/context/paginationContext.tsx";
 
-const SynthList: FunctionComponent = () => {
-  const { synths, setSynths } = useSynths();
+interface SynthListProps {
+  synths: Synth[];
+  setSynths: React.Dispatch<React.SetStateAction<Synth[]>>;
+}
+
+const SynthList: FunctionComponent<SynthListProps> = ({
+  synths,
+  setSynths,
+}) => {
   const { debouncedSearch, filterType, debouncedPriceRange, filterLikes } =
     useFilter();
-  const { currentPage, setCurrentPage, setTotalPages } = usePagination();
+  const { currentPage, setCurrentPage, setTotalPages, totalPages } =
+    usePagination();
   const itemsPerPage = 24;
 
   interface HandleToggleLike {
@@ -30,28 +37,13 @@ const SynthList: FunctionComponent = () => {
 
   // Filtering logic
   const filteredSynths = useMemo(() => {
-    console.log(
-      "Filtering with search:",
-      debouncedSearch,
-      "price range:",
-      debouncedPriceRange,
-      "filterType:",
-      filterType,
-      "filterLikes:",
-      filterLikes
-    );
-
     return synths
       .filter((synth) => {
         const price = Number(synth.price);
 
         // Validate price
-        if (isNaN(price)) {
-          console.log(
-            `excluded ${synth.brand} ${synth.name} because price is invalid: ${synth.price}`
-          );
-          return false;
-        }
+        if (isNaN(price)) return false;
+
         // Search filter
         if (
           debouncedSearch &&
@@ -59,25 +51,15 @@ const SynthList: FunctionComponent = () => {
             .toLowerCase()
             .includes(debouncedSearch.toLowerCase())
         ) {
-          console.log(
-            `excluded ${synth.brand} ${synth.name} because search "${debouncedSearch}" did not match`
-          );
           return false;
         }
         // Price filter
-        if (price < debouncedPriceRange[0] || price > debouncedPriceRange[1]) {
-          console.log(
-            `excluded ${synth.brand} ${synth.name} because price ${price} not in range [${debouncedPriceRange[0]}, ${debouncedPriceRange[1]}]`
-          );
+        if (price < debouncedPriceRange[0] || price > debouncedPriceRange[1])
           return false;
-        }
+
         // Likes filter
-        if (filterLikes && !synth.liked) {
-          console.log(
-            `excluded ${synth.brand} ${synth.name} because not liked (filterLikes is on)`
-          );
-          return false;
-        }
+        if (filterLikes && !synth.liked) return false;
+
         return true;
       })
       .sort((a, b) => {
@@ -106,8 +88,16 @@ const SynthList: FunctionComponent = () => {
     return filteredSynths.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredSynths, currentPage]);
 
+  if (totalPages === 0) {
+    return (
+      <div className="text-center py-10">
+        <p>No synths. Change your filters!</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 auto-rows-fr my-5">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 auto-rows-fr my-5 w-full">
       {paginatedSynths.map((synth) => (
         <SynthCardWrapper key={synth.id} imageUrl={synth.image}>
           <SynthCard

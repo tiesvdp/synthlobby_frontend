@@ -18,6 +18,7 @@ import {
   Legend,
   Filler,
 } from "chart.js";
+import { PaginationProvider } from "./context/paginationContext.tsx";
 
 ChartJS.register(
   LineElement,
@@ -26,13 +27,7 @@ ChartJS.register(
   CategoryScale,
   Tooltip,
   Legend,
-  Filler,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend
+  Filler
 );
 
 const queryClient = new QueryClient({
@@ -47,11 +42,13 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <SynthProvider>
-        <BrowserRouter>
-          <Provider>
-            <App />
-          </Provider>
-        </BrowserRouter>
+        <PaginationProvider>
+          <BrowserRouter>
+            <Provider>
+              <App />
+            </Provider>
+          </BrowserRouter>
+        </PaginationProvider>
       </SynthProvider>
     </QueryClientProvider>
   </React.StrictMode>

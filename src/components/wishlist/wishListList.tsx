@@ -2,16 +2,7 @@ import { useMemo, useState } from "react";
 import { Card, CardBody } from "@heroui/react";
 import { Line } from "react-chartjs-2";
 import { useSynths } from "@/context/synthContext.tsx";
-import {
-  Chart as ChartJS,
-  LineElement,
-  PointElement,
-  LinearScale,
-  CategoryScale,
-  Tooltip,
-  Legend,
-  TooltipItem,
-} from "chart.js";
+import { TooltipItem } from "chart.js";
 import { motion, AnimatePresence } from "framer-motion";
 import { IoClose } from "react-icons/io5";
 import {
@@ -25,15 +16,6 @@ import {
   subYears,
   startOfYear,
 } from "date-fns";
-
-ChartJS.register(
-  LineElement,
-  PointElement,
-  LinearScale,
-  CategoryScale,
-  Tooltip,
-  Legend
-);
 
 type PricePoint = {
   date: Date;
@@ -130,10 +112,12 @@ export default function WishListList() {
     } else {
       synthsWithPriceHistory = likedSynths.map((synth) => ({
         ...synth,
-        prices: (synth.prices || []).map((p) => ({
-          ...p,
-          date: new Date(p.date),
-        })),
+        prices: (synth.prices || [])
+          .map((p) => ({
+            ...p,
+            date: new Date(p.date),
+          }))
+          .sort((a, b) => a.date.getTime() - b.date.getTime()),
       }));
     }
 
@@ -337,9 +321,10 @@ export default function WishListList() {
                     transition={{ duration: 0.2 }}
                     className="flex items-center justify-between bg-[#f6edfa] rounded-lg px-3 py-2 shadow-sm"
                   >
-                    <div>
-                      <div className="truncate max-w-[270px] text-sm font-medium text-[#7c1fa2] -mb-1">
-                        {synth.name}
+                    <div className="w-auto">
+                      <div className="flex justify-between text-sm font-medium text-[#7c1fa2] -mb-1">
+                        <div className="truncate">{synth.name}</div>
+                        <div className="ml-10">€{synth.price}</div>
                       </div>
                       <div>
                         <span

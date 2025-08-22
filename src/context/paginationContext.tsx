@@ -8,7 +8,7 @@ interface PaginationContextProps {
 }
 
 const PaginationContext = createContext<PaginationContextProps | undefined>(
-  undefined,
+  undefined
 );
 
 export const PaginationProvider = ({ children }: { children: ReactNode }) => {

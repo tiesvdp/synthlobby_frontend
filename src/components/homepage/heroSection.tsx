@@ -36,7 +36,7 @@ export function HeroSection() {
               className="bg-gradient-to-b from-[#FF1CF7] to-[#b249f8] shadow-lg"
               radius="full"
               size="lg"
-              onClick={handleClick}
+              onPress={handleClick}
             >
               <span className="font-medium text-white text-lg">
                 Explore Synths

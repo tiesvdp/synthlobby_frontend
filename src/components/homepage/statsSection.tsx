@@ -1,4 +1,4 @@
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
 
 export function StatsSection() {
   return (
@@ -28,7 +28,7 @@ export function StatsSection() {
                 <line x1="12" y1="17" x2="12" y2="21"></line>
               </svg>
             </div>
-            <span className="text-3xl font-bold text-[#c026d3]">500+</span>
+            <span className="text-3xl font-bold text-[#c026d3]">1000+</span>
             <span className="text-default-500 text-sm">Synths Tracked</span>
           </motion.div>
 
@@ -54,7 +54,7 @@ export function StatsSection() {
                 <line x1="7" y1="7" x2="7.01" y2="7"></line>
               </svg>
             </div>
-            <span className="text-3xl font-bold text-[#c026d3]">20+</span>
+            <span className="text-3xl font-bold text-[#c026d3]">3+</span>
             <span className="text-default-500 text-sm">Retailers</span>
           </motion.div>
 
@@ -114,5 +114,5 @@ export function StatsSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }

@@ -21,10 +21,10 @@ const PriceSlider: FunctionComponent = () => {
   };
 
   return (
-    <div className="flex flex-col gap-2 w-full h-full max-w-md items-start justify-center">
+    <div className="flex flex-col gap-2 w-full h-full items-start justify-center mt-6 md:mt-0">
       <Slider
         aria-label="Price range"
-        className="max-w-md"
+        className="max-w-full"
         classNames={{
           base: "max-w-md gap-3",
           track: "border-s-secondary-100",

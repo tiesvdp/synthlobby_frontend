@@ -19,8 +19,6 @@ import React from "react";
 import FallBack from "./fallBack";
 import LastRefreshed from "./lastRefreshed";
 
-// ...existing imports...
-
 export const Navbar = () => {
   return (
     <NextUINavbar maxWidth="full" position="sticky">

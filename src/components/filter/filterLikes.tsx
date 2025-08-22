@@ -17,7 +17,8 @@ const FilterLikes: FunctionComponent = () => {
       aria-label="Like"
       color="default"
       variant="ghost"
-      onClick={handleClick}
+      onPress={handleClick}
+      className="w-full md:w-auto lg:w-full"
     >
       <HeartIcon filled={filterLikes} />
     </Button>

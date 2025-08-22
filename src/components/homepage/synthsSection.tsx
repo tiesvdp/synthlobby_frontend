@@ -17,7 +17,7 @@ export function FeaturedSynthsSection() {
           className="mb-6 xl:mb-8"
         >
           <h2 className={`${title({ size: "sm" })}`}>
-            <span className="text-[#c026d3]">Featured</span> Synths
+            Recent <span className="text-[#c026d3]">Price</span> Changes
           </h2>
           <div className="lg:hidden mt-4">
             <React.Suspense fallback={<FallBack text="Loading..." />}>

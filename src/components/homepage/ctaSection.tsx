@@ -42,7 +42,7 @@ export function CtaSection() {
             className="bg-gradient-to-b from-[#FF1CF7] to-[#b249f8] shadow-lg text-white"
             radius="full"
             size="lg"
-            onClick={handleClick}
+            onPress={handleClick}
           >
             <span className="font-medium text-white text-lg">
               Start browsing now

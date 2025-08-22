@@ -6,9 +6,13 @@ export const siteConfig = {
     "Don't waste time searching the internet for the cheapest keyboard prices. SynthLobby does it for you.",
   navItems: [
     {
-      label: "Home",
+      label: "Browse",
       href: "/synths",
     },
+    /*     {
+      label: "Updates",
+      href: "/updates",
+    }, */
     {
       label: "Wishlist",
       href: "/wishlist",

@@ -1,10 +1,15 @@
-import { FunctionComponent, memo, Suspense, useMemo, useState } from "react";
-import { Card, CardHeader, CardBody, Image } from "@heroui/react";
+import {
+  type FunctionComponent,
+  memo,
+  Suspense,
+  useMemo,
+  useState,
+} from "react";
+import { Card } from "@heroui/react";
 import { Button } from "@heroui/button";
 import { motion } from "framer-motion";
 import { Line } from "react-chartjs-2";
 import {
-  subDays,
   format,
   subWeeks,
   startOfWeek,
@@ -15,59 +20,13 @@ import {
   startOfYear,
 } from "date-fns";
 import { HeartIcon } from "@/components/heartIcon.tsx";
-import { Synth } from "@/models/synths.ts";
-import { TooltipItem } from "chart.js";
-
-type PricePoint = {
-  date: Date;
-  price: number;
-};
-
-const generatePriceHistory = (
-  basePrice: number,
-  days: number
-): PricePoint[] => {
-  const history: PricePoint[] = [];
-  let currentPrice = Math.round(basePrice / 10) * 10 - 1;
-  const today = new Date();
-  let i = days - 1;
-
-  while (i >= 0) {
-    const randomFactor = Math.random();
-    let duration = Math.floor(Math.random() * 21) + 14;
-
-    if (randomFactor > 0.95) {
-      const change =
-        (Math.floor(Math.random() * 5) + 2) *
-        10 *
-        (Math.random() > 0.5 ? 1 : -1);
-      currentPrice = Math.round((currentPrice + change) / 10) * 10 - 1;
-    } else if (randomFactor > 0.85) {
-      const priceBeforeSale = currentPrice;
-      const salePrice = Math.round((priceBeforeSale * 0.9) / 5) * 5 - 1;
-      const saleDuration = Math.floor(Math.random() * 6) + 3;
-
-      for (let j = 0; j < saleDuration && i >= 0; j++) {
-        history.push({ date: subDays(today, i), price: salePrice });
-        i--;
-      }
-      currentPrice = priceBeforeSale;
-    } else {
-      const change = (Math.floor(Math.random() * 3) - 1) * 5;
-      currentPrice += change;
-    }
-
-    currentPrice = Math.max(Math.round(basePrice * 0.75), currentPrice);
-    currentPrice = Math.min(Math.round(basePrice * 1.4), currentPrice);
-
-    for (let j = 0; j < duration && i >= 0; j++) {
-      history.push({ date: subDays(today, i), price: currentPrice });
-      i--;
-    }
-  }
-
-  return history.sort((a, b) => a.date.getTime() - b.date.getTime());
-};
+import type { Synth } from "@/models/synths.ts";
+import type { TooltipItem } from "chart.js";
+import {
+  calculateRecentPriceChange,
+  generatePriceHistory,
+} from "@/utils/priceUtils.ts";
+import type { PricePoint } from "@/models/prices";
 
 interface SynthCardProps {
   synth: Synth;
@@ -82,7 +41,6 @@ const SynthCard: FunctionComponent<SynthCardProps> = ({
   liked,
   onToggleLike,
 }) => {
-  // --- DEVELOPMENT TOGGLE ---
   const USE_FAKE_DATA = false;
 
   const [granularity, setGranularity] = useState<Granularity>("day");
@@ -97,14 +55,22 @@ const SynthCard: FunctionComponent<SynthCardProps> = ({
       ? synth.name
       : `${synth.brand} ${synth.name}`;
 
+  const { currentPrice, previousPrice, percentChange } = useMemo(
+    () => calculateRecentPriceChange(synth.prices),
+    [synth.prices]
+  );
+
   const priceHistory: PricePoint[] = useMemo(() => {
+    let arr: PricePoint[];
     if (USE_FAKE_DATA) {
-      return generatePriceHistory(synth.price || 1000, 365 * 5);
+      arr = generatePriceHistory(synth.price || 1000, 365 * 5);
+    } else {
+      arr = (synth.prices || []).map((p) => ({
+        ...p,
+        date: new Date(p.date),
+      }));
     }
-    return (synth.prices || []).map((p) => ({
-      ...p,
-      date: new Date(p.date),
-    }));
+    return arr.sort((a, b) => a.date.getTime() - b.date.getTime());
   }, [synth.price, synth.prices]);
 
   const { chartData, chartOptions } = useMemo(() => {
@@ -173,12 +139,12 @@ const SynthCard: FunctionComponent<SynthCardProps> = ({
           ticks: {
             autoSkip: false,
             maxRotation: 0,
-            callback: function (_: any, index: number) {
+            callback: (_: any, index: number) => {
               const currentDate = filteredPriceHistory[index]?.date;
               if (!currentDate) return null;
               if (granularity === "day") return format(currentDate, "d MMM");
 
-              let tickDates: Date[] = [];
+              const tickDates: Date[] = [];
               for (let i = 0; i < 5; i++) {
                 if (granularity === "week")
                   tickDates.push(startOfWeek(subWeeks(today, i)));
@@ -232,75 +198,129 @@ const SynthCard: FunctionComponent<SynthCardProps> = ({
     </button>
   );
 
+  const getAvailabilityStyle = (availability: string) => {
+    switch (availability.toLowerCase()) {
+      case "in stock":
+        return "bg-green-100 text-green-700 border border-green-200";
+      case "sold out":
+        return "bg-red-100 text-red-700 border border-red-200";
+      case "available soon":
+        return "bg-orange-100 text-orange-700 border border-orange-200";
+      default:
+        return "bg-gray-100 text-gray-600 border border-gray-200";
+    }
+  };
+
   return (
     <Card
-      className="w-full flex flex-col py-4 flex-grow min-h-[650px]"
+      className="w-full flex flex-col lg:flex-row p-4 gap-4 lg:gap-6"
       id={synth.id + synth.source}
     >
-      <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
-        <h4 className="font-bold text-large text-start">{name}</h4>
-        <p className="text-tiny uppercase font-bold">
-          {synth.price ? `€${synth.price}` : "geen prijs beschikbaar"}
-        </p>
-        <small className="text-default-500">{synth.availability}</small>
-      </CardHeader>
-      <CardBody className="overflow-visible py-2 flex flex-col justify-between">
+      <div className="w-full lg:w-1/3 flex-shrink-0">
         <a
           href={synth.href}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full rounded-xl block cursor-pointer"
+          className="w-full rounded-xl block cursor-pointer aspect-square"
           tabIndex={0}
           aria-label={`Open ${name} on source site`}
         >
           <Suspense
             fallback={
-              <div className="w-full rounded-xl">
-                <div className="object-cover rounded-xl flex-grow w-full pb-[100%]" />
-              </div>
+              <div className="w-full rounded-xl bg-gray-200 aspect-square" />
             }
           >
             <motion.div
               animate={{ opacity: 1, scale: 1 }}
-              className="w-full rounded-xl"
+              className="w-full h-full"
               initial={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <Image
+              <img
                 alt="Card background"
-                className="object-cover rounded-xl"
-                src={synth.image}
-                width="100%"
+                className="object-cover rounded-xl w-full h-full p-2"
+                src={synth.image || "/placeholder.svg"}
               />
             </motion.div>
           </Suspense>
         </a>
-        <div className="px-2 mt-4 flex flex-col flex-grow">
+      </div>
+
+      <div className="w-full lg:w-2/3 flex flex-col">
+        <div className="flex flex-col items-start">
+          <div className="flex justify-between w-full flex-col sm:flex-row">
+            <div>
+              <h4 className="font-bold text-large text-start">{name}</h4>
+            </div>
+            <div className="w-fit">
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-semibold ${getAvailabilityStyle(
+                  synth.availability
+                )}`}
+              >
+                {synth.availability}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-2 sm:mt-0">
+            {previousPrice !== null && (
+              <span className="text-gray-400 text-base line-through font-medium">
+                €{previousPrice}
+              </span>
+            )}
+            {currentPrice !== null ? (
+              <span className="font-bold text-xl text-[#c026d3]">
+                €{currentPrice}
+              </span>
+            ) : (
+              <p className="text-tiny uppercase font-bold">
+                geen prijs beschikbaar
+              </p>
+            )}
+            {percentChange !== null && (
+              <span
+                className={`ml-2 px-2 py-1 rounded text-xs font-semibold ${
+                  percentChange > 0
+                    ? "bg-red-100 text-red-700"
+                    : "bg-green-100 text-green-700"
+                }`}
+              >
+                {percentChange > 0 ? "+" : ""}
+                {percentChange.toFixed(1)}%
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-col flex-grow">
           <div className="flex justify-end gap-2 mb-2">
             <GranularityButton mode="day" label="D" />
             <GranularityButton mode="week" label="W" />
             <GranularityButton mode="month" label="M" />
             <GranularityButton mode="year" label="Y" />
           </div>
-          <div className="relative h-48">
+          <div className="relative flex-grow min-h-[150px]">
             <Line data={chartData} options={chartOptions as any} />
           </div>
         </div>
-        <div className="flex justify-between items-center mt-4 px-2">
-          <p className="text-start text-tiny uppercase font-bold">
-            {synth.source}
-          </p>
+
+        <div className="flex justify-between items-center mt-4 pt-2 border-t">
+          <div className="bg-purple-100 text-purple-800 px-3 py-1 rounded-md border border-purple-200">
+            <p className="text-start text-xs font-bold uppercase tracking-wide">
+              {synth.source}
+            </p>
+          </div>
           <Button
             isIconOnly
             aria-label="Like"
             className="bg-transparent"
             disableRipple={true}
-            onClick={handleClick}
+            onPress={handleClick}
           >
             <HeartIcon filled={liked} />
           </Button>
         </div>
-      </CardBody>
+      </div>
     </Card>
   );
 };

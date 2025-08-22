@@ -13,9 +13,9 @@ const FilterSelect: FunctionComponent = () => {
   const { setFilterType } = useFilter();
 
   return (
-    <Dropdown backdrop="blur">
+    <Dropdown backdrop="blur" className="w-full">
       <DropdownTrigger>
-        <Button className="px-6" variant="bordered">
+        <Button className="px-6 w-full" variant="bordered">
           Select filter type
         </Button>
       </DropdownTrigger>
