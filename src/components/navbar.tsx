@@ -8,20 +8,39 @@ import {
   NavbarMenu,
   NavbarMenuItem,
 } from "@heroui/navbar";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  DropdownSection,
+} from "@heroui/dropdown";
+import { Button } from "@heroui/button";
 import { link as linkStyles } from "@heroui/theme";
 import clsx from "clsx";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Logo } from "@/components/icons";
+import { FiLogOut, FiUser, FiGrid } from "react-icons/fi";
 
 import { siteConfig } from "@/config/site";
-import { GithubIcon } from "@/components/icons";
-import { Logo } from "@/components/icons";
-import { WebsiteIcon } from "@/components/websiteIcon.tsx";
-import React from "react";
 import FallBack from "./fallBack";
 import LastRefreshed from "./lastRefreshed";
+import { useAuth } from "@/context/authContext";
+import { auth } from "@/firebase";
 
 export const Navbar = () => {
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await auth.signOut();
+    navigate("/");
+  };
+
   return (
     <NextUINavbar maxWidth="full" position="sticky">
+      {/* Left side: Brand and Desktop Nav Links */}
       <NavbarContent className="basis-auto" justify="start">
         <NavbarBrand className="gap-3 max-w-fit">
           <Link
@@ -33,7 +52,6 @@ export const Navbar = () => {
             <p className="font-bold text-inherit me-2">SYNTHLOBBY</p>
           </Link>
         </NavbarBrand>
-        {/* Desktop nav items */}
         <div className="hidden sm:flex items-center ml-6 gap-3">
           {siteConfig.navItems.map((item) => (
             <NavbarItem key={item.href}>
@@ -48,70 +66,85 @@ export const Navbar = () => {
                 color="foreground"
                 href={item.href}
               >
-                {item.label == "Home" ? "Browse" : item.label}
+                {item.label === "Home" ? "Browse" : item.label}
               </Link>
             </NavbarItem>
           ))}
         </div>
       </NavbarContent>
 
-      {/* Desktop: LastRefreshed just left of icons */}
-      <NavbarContent className="hidden lg:flex items-center pb-1" justify="end">
+      {/* Center (hidden on small screens): Last Refreshed */}
+      <NavbarContent className="hidden lg:flex items-center" justify="center">
         <React.Suspense fallback={<FallBack text="Loading..." />}>
           <LastRefreshed />
         </React.Suspense>
       </NavbarContent>
 
-      {/* Desktop right-side icons */}
-      <NavbarContent className="max-w-min hidden sm:flex gap-2" justify="end">
-        <NavbarItem className="gap-2">
-          <Link
-            isExternal
-            href={siteConfig.links.github}
-            title="GitHub"
-            className="transition-transform duration-300 hover:scale-110 me-2"
-          >
-            <GithubIcon className="text-default-500" />
-          </Link>
-          <Link
-            isExternal
-            href={siteConfig.links.website}
-            className="transition-transform duration-300 hover:scale-110"
-          >
-            <WebsiteIcon className="text-default-500" />
-          </Link>
-        </NavbarItem>
+      {/* Right side: Icons and Auth Actions */}
+      <NavbarContent className="max-w-min flex gap-2" justify="end">
+        {/* Auth Section */}
+        {currentUser ? (
+          <Dropdown placement="bottom-end">
+            <DropdownTrigger>
+              <Button
+                isIconOnly
+                as="button"
+                variant="light"
+                className="transition-transform rounded-full"
+                aria-label="User menu"
+              >
+                <FiUser size={22} className="text-default-600" />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu aria-label="Profile Actions" variant="flat">
+              <DropdownSection showDivider>
+                <DropdownItem key="profile" className="h-14 gap-2" isReadOnly>
+                  <p className="font-semibold">
+                    Hi, {currentUser.displayName || currentUser.email}!
+                  </p>
+                </DropdownItem>
+              </DropdownSection>
+              <DropdownItem
+                key="dashboard"
+                startContent={<FiGrid />}
+                onPress={() => navigate("/dashboard")}
+              >
+                My Dashboard
+              </DropdownItem>
+              <DropdownItem
+                key="logout"
+                color="danger"
+                startContent={<FiLogOut />}
+                onPress={handleLogout}
+              >
+                Log Out
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+        ) : (
+          <div className="hidden sm:flex items-center">
+            <Button
+              as={Link}
+              href="/login"
+              color="default"
+              variant="bordered"
+              className="transition-all bg-white duration-300 font-medium px-6 py-2 shadow-sm hover:shadow-md"
+            >
+              Sign In
+            </Button>
+          </div>
+        )}
+
+        {/* Mobile Menu Toggle */}
+        <NavbarMenuToggle className="sm:hidden" />
       </NavbarContent>
 
-      {/* Mobile hamburger and icons */}
-      <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
-        <Link
-          isExternal
-          href={siteConfig.links.github}
-          className="transition-transform duration-300 hover:scale-110"
-        >
-          <GithubIcon className="text-default-500" />
-        </Link>
-        <Link
-          isExternal
-          href={siteConfig.links.website}
-          className="transition-transform duration-300 hover:scale-110"
-        >
-          <WebsiteIcon className="text-default-500" />
-        </Link>
-        <NavbarMenuToggle />
-      </NavbarContent>
-
-      {/* Mobile menu */}
-      <NavbarMenu>
+      {/* Mobile Menu */}
+      <NavbarMenu className="bg-white">
         {siteConfig.navItems.map((item, index) => (
           <NavbarMenuItem key={`${item}-${index}`}>
             <Link
-              className={clsx(
-                linkStyles({ color: "foreground" }),
-                "w-full",
-                "data-[active=true]:text-primary data-[active=true]:font-medium"
-              )}
+              className="w-full"
               color="foreground"
               href={item.href}
               size="lg"
@@ -120,6 +153,21 @@ export const Navbar = () => {
             </Link>
           </NavbarMenuItem>
         ))}
+
+        {!currentUser && (
+          <NavbarMenuItem>
+            <Button
+              as={Link}
+              href="/login"
+              color="secondary"
+              variant="solid"
+              className="w-full bg-gradient-to-r from-[#b249f8] to-[#9333ea] hover:from-[#9333ea] hover:to-[#7c3aed] transition-all duration-300 font-medium shadow-lg"
+              size="lg"
+            >
+              Sign In
+            </Button>
+          </NavbarMenuItem>
+        )}
       </NavbarMenu>
     </NextUINavbar>
   );

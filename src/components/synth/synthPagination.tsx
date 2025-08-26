@@ -23,7 +23,7 @@ const SynthPagination: FunctionComponent = () => {
   }
 
   return (
-    <div className="flex justify-between gap-4">
+    <div className="flex justify-between items-center gap-4">
       <Button
         className="flex-grow max-w-40"
         disabled={currentPage === 1}

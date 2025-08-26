@@ -99,3 +99,10 @@ export const generatePriceHistory = (
 
   return history.sort((a, b) => a.date.getTime() - b.date.getTime());
 };
+
+export const formatPrice = (price: number | string) => {
+  if (!price) return "";
+  const num = typeof price === "string" ? parseFloat(price) : price;
+  if (isNaN(num)) return String(price);
+  return "€" + num.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};

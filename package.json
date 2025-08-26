@@ -10,9 +10,11 @@
       "preview": "vite preview"
    },
    "dependencies": {
+      "@heroui/avatar": "^2.2.20",
       "@heroui/button": "2.2.19",
       "@heroui/card": "^2.2.18",
       "@heroui/chip": "^2.2.15",
+      "@heroui/dropdown": "^2.3.24",
       "@heroui/image": "^2.2.12",
       "@heroui/input": "2.4.19",
       "@heroui/link": "2.2.16",
@@ -27,6 +29,8 @@
       "chart.js": "^4.5.0",
       "clsx": "2.1.1",
       "date-fns": "^4.1.0",
+      "depcheck": "^1.4.7",
+      "firebase": "^12.1.0",
       "framer-motion": "~11.1.1",
       "fuse.js": "^7.0.0",
       "lucide-react": "^0.510.0",
@@ -40,6 +44,7 @@
       "uuid": "^10.0.0"
    },
    "devDependencies": {
+      "@types/node": "^24.3.0",
       "@types/react": "18.3.3",
       "@types/react-dom": "18.3.0",
       "@types/uuid": "^10.0.0",

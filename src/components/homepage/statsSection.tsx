@@ -1,116 +1,72 @@
 import { motion } from "framer-motion";
+import { useGetSynths } from "@/api/synths";
+import { Card } from "@heroui/card";
+import { FiTag, FiActivity } from "react-icons/fi";
+import { CgPiano } from "react-icons/cg";
+import { isToday } from "date-fns";
+
+const StatItem = ({
+  icon,
+  value,
+  label,
+  delay,
+}: {
+  icon: React.ReactNode;
+  value: string;
+  label: string;
+  delay: number;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.9 }}
+    whileInView={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.5, delay }}
+    viewport={{ once: true, amount: 0.5 }}
+  >
+    <Card className="flex flex-col items-center p-6 text-center shadow-lg hover:shadow-xl transition-shadow bg-white h-full">
+      {icon}
+      <span className="text-4xl font-bold text-[#c026d3] mt-2">{value}</span>
+      <span className="text-default-500 text-sm mt-1">{label}</span>
+    </Card>
+  </motion.div>
+);
 
 export function StatsSection() {
+  const { data: synths } = useGetSynths();
+
+  const totalSynths = synths?.length || 0;
+  const totalBrands = synths ? new Set(synths.map((s) => s.brand)).size : 0;
+
+  const priceUpdatesToday = synths
+    ? synths.filter((s) => {
+        if (!s.prices || s.prices.length === 0) return false;
+        const lastPriceDate = new Date(s.prices[s.prices.length - 1].date);
+        return isToday(lastPriceDate);
+      }).length
+    : 0;
+
   return (
-    <section className="w-full py-6 my-12 relative bg-gradient-to-r from-purple-100 to-pink-100">
+    <section className="w-full py-16 relative">
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNjMDI2ZDMiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0di00aC0ydjRoLTR2Mmg0djRoMnYtNGg0di0yaC00em0wLTMwVjBoLTJ2NGgtNHYyaDR2NGgyVjZoNFY0aC00ek02IDM0di00SDR2NEgwdjJoNHY0aDJ2LTRoNHYtMkg2ek02IDRWMEg0djRIMHYyaDR2NGgyVjZoNFY0SDZ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-50 z-0"></div>
       <div className="container mx-auto px-4 relative z-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="flex flex-col items-center bg-white p-6 rounded-xl shadow-sm"
-          >
-            <div className="mb-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-10 h-10 text-[#c026d3]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                <line x1="8" y1="21" x2="16" y2="21"></line>
-                <line x1="12" y1="17" x2="12" y2="21"></line>
-              </svg>
-            </div>
-            <span className="text-3xl font-bold text-[#c026d3]">1000+</span>
-            <span className="text-default-500 text-sm">Synths Tracked</span>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            viewport={{ once: true }}
-            className="flex flex-col items-center bg-white p-6 rounded-xl shadow-sm"
-          >
-            <div className="mb-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-10 h-10 text-[#c026d3]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                <line x1="7" y1="7" x2="7.01" y2="7"></line>
-              </svg>
-            </div>
-            <span className="text-3xl font-bold text-[#c026d3]">3+</span>
-            <span className="text-default-500 text-sm">Retailers</span>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            viewport={{ once: true }}
-            className="flex flex-col items-center bg-white p-6 rounded-xl shadow-sm"
-          >
-            <div className="mb-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-10 h-10 text-[#c026d3]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="12" y1="1" x2="12" y2="23"></line>
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-              </svg>
-            </div>
-            <span className="text-3xl font-bold text-[#c026d3]">€10K+</span>
-            <span className="text-default-500 text-sm">Saved by Users</span>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            viewport={{ once: true }}
-            className="flex flex-col items-center bg-white p-6 rounded-xl shadow-sm"
-          >
-            <div className="mb-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-10 h-10 text-[#c026d3]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-            </div>
-            <span className="text-3xl font-bold text-[#c026d3]">5K+</span>
-            <span className="text-default-500 text-sm">Happy Musicians</span>
-          </motion.div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <StatItem
+            icon={<CgPiano className="w-10 h-10 text-[#c026d3]" />}
+            value={totalSynths.toLocaleString()}
+            label="Synths Tracked"
+            delay={0.1}
+          />
+          <StatItem
+            icon={<FiActivity className="w-10 h-10 text-[#c026d3]" />}
+            value={priceUpdatesToday.toLocaleString()}
+            label="Price Updates Today"
+            delay={0.2}
+          />
+          <StatItem
+            icon={<FiTag className="w-10 h-10 text-[#c026d3]" />}
+            value={totalBrands.toString()}
+            label="Unique Brands"
+            delay={0.3}
+          />
         </div>
       </div>
     </section>

@@ -9,17 +9,14 @@ export const siteConfig = {
       label: "Browse",
       href: "/synths",
     },
-    /*     {
-      label: "Updates",
-      href: "/updates",
-    }, */
+
     {
-      label: "Wishlist",
-      href: "/wishlist",
+      label: "Compare",
+      href: "/compare",
     },
     {
-      label: "Brands",
-      href: "/brands",
+      label: "My Dashboard",
+      href: "/dashboard",
     },
   ],
   links: {

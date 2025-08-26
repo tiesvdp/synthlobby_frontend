@@ -10,41 +10,35 @@ import { Synth } from "@/models/synths.ts";
 import SynthCard from "@/components/synth/synthCard.tsx";
 import { useFilter } from "@/context/filterContext.tsx";
 import { usePagination } from "@/context/paginationContext.tsx";
+import { useUserPreferences } from "@/context/userPreferencesContext";
+import { calculateRecentPriceChange } from "@/utils/priceUtils";
 
 interface SynthListProps {
   synths: Synth[];
-  setSynths: React.Dispatch<React.SetStateAction<Synth[]>>;
 }
 
-const SynthList: FunctionComponent<SynthListProps> = ({
-  synths,
-  setSynths,
-}) => {
-  const { debouncedSearch, filterType, debouncedPriceRange, filterLikes } =
-    useFilter();
+const SynthList: FunctionComponent<SynthListProps> = ({ synths }) => {
+  const {
+    debouncedSearch,
+    filterType,
+    debouncedPriceRange,
+    filterLikes,
+    filterCompared,
+    filterPriceChanges,
+    filterAvailability,
+  } = useFilter();
   const { currentPage, setCurrentPage, setTotalPages, totalPages } =
     usePagination();
+  const { likedSynthIds, toggleLike, compareSynthIds, toggleCompare } =
+    useUserPreferences();
   const itemsPerPage = 24;
 
-  interface HandleToggleLike {
-    (id: string): void;
-  }
-
-  const handleToggleLike: HandleToggleLike = (id) =>
-    setSynths((prev: Synth[]) =>
-      prev.map((s: Synth) => (s.id === id ? { ...s, liked: !s.liked } : s))
-    );
-
-  // Filtering logic
   const filteredSynths = useMemo(() => {
     return synths
       .filter((synth) => {
         const price = Number(synth.price);
-
-        // Validate price
         if (isNaN(price)) return false;
 
-        // Search filter
         if (
           debouncedSearch &&
           !`${synth.brand} ${synth.name}`
@@ -53,12 +47,32 @@ const SynthList: FunctionComponent<SynthListProps> = ({
         ) {
           return false;
         }
-        // Price filter
-        if (price < debouncedPriceRange[0] || price > debouncedPriceRange[1])
-          return false;
 
-        // Likes filter
-        if (filterLikes && !synth.liked) return false;
+        if (price < debouncedPriceRange[0] || price > debouncedPriceRange[1]) {
+          return false;
+        }
+
+        if (filterLikes && !likedSynthIds.has(synth.id)) {
+          return false;
+        }
+
+        if (filterCompared && !compareSynthIds.has(synth.id)) {
+          return false;
+        }
+
+        if (
+          filterAvailability !== "all" &&
+          synth.availability.toLowerCase() !== filterAvailability
+        ) {
+          return false;
+        }
+
+        if (filterPriceChanges) {
+          const { percentChange } = calculateRecentPriceChange(synth.prices);
+          if (percentChange === null || percentChange === 0) {
+            return false;
+          }
+        }
 
         return true;
       })
@@ -69,29 +83,37 @@ const SynthList: FunctionComponent<SynthListProps> = ({
         if (filterType === "des") return priceB - priceA;
         return 0;
       });
-  }, [synths, debouncedSearch, debouncedPriceRange, filterLikes, filterType]);
+  }, [
+    synths,
+    debouncedSearch,
+    debouncedPriceRange,
+    filterLikes,
+    filterCompared,
+    filterPriceChanges,
+    filterAvailability,
+    filterType,
+    likedSynthIds,
+    compareSynthIds,
+  ]);
 
-  // Update pagination and handle page overflow
   useEffect(() => {
     const total = Math.ceil(filteredSynths.length / itemsPerPage);
     setTotalPages(total);
 
-    // Adjust current page if it's out of bounds
     if (currentPage > total) {
-      setCurrentPage(total || 1); // If no results, reset to page 1
+      setCurrentPage(total || 1);
     }
   }, [filteredSynths.length, setTotalPages, currentPage, setCurrentPage]);
 
-  // Handle pagination dynamically
   const paginatedSynths = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredSynths.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredSynths, currentPage]);
 
-  if (totalPages === 0) {
+  if (totalPages === 0 && synths.length > 0) {
     return (
       <div className="text-center py-10">
-        <p>No synths. Change your filters!</p>
+        <p>No synths match your current filters.</p>
       </div>
     );
   }
@@ -101,9 +123,11 @@ const SynthList: FunctionComponent<SynthListProps> = ({
       {paginatedSynths.map((synth) => (
         <SynthCardWrapper key={synth.id} imageUrl={synth.image}>
           <SynthCard
-            liked={synth.liked ?? false}
+            liked={likedSynthIds.has(synth.id)}
+            isCompared={compareSynthIds.has(synth.id)}
             synth={synth}
-            onToggleLike={handleToggleLike}
+            onToggleLike={toggleLike}
+            onToggleCompare={toggleCompare}
           />
         </SynthCardWrapper>
       ))}
@@ -111,12 +135,12 @@ const SynthList: FunctionComponent<SynthListProps> = ({
   );
 };
 
-// Image loader wrapper (optimized)
 const SynthCardWrapper: FunctionComponent<{
   children: ReactNode;
   imageUrl: string;
 }> = ({ children, imageUrl }) => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const finalImageUrl = imageUrl || "/placeholder.svg";
 
   return (
     <motion.div
@@ -126,8 +150,9 @@ const SynthCardWrapper: FunctionComponent<{
       className="flex flex-grow"
     >
       <img
-        src={imageUrl}
+        src={finalImageUrl}
         onLoad={() => setIsLoaded(true)}
+        onError={() => setIsLoaded(true)}
         className="hidden"
         alt=""
       />

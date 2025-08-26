@@ -10,7 +10,7 @@ export function CtaSection() {
   }
 
   return (
-    <section className="w-full lg:my-16 my-12 text-center relative">
+    <section className="w-full lg:my-16 md:my-12 my-6 text-center relative">
       <div className="container mx-auto px-4 relative z-10">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
@@ -22,16 +22,6 @@ export function CtaSection() {
           Ready to find your{" "}
           <span className="text-[#c026d3]">perfect synth?</span>
         </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          viewport={{ once: true }}
-          className="text-lg text-default-500 mb-8 max-w-2xl mx-auto"
-        >
-          Join thousands of musicians who've already found their dream gear at
-          the best prices.
-        </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

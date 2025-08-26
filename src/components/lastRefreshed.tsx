@@ -27,13 +27,13 @@ export default function LastRefreshed() {
 
   if (error)
     return (
-      <span className="inline-block text-xs md:text-sm px-3 py-1 rounded-none bg-gradient-to-r from-[#7c1fa2]/90 to-[#2d064d]/90 text-red-100 shadow border border-red-300 animate-pulse">
+      <span className="inline-block text-xs md:text-sm px-4 py-2 rounded-lg bg-gradient-to-r from-[#7c1fa2]/90 to-[#2d064d]/90 text-red-100 shadow border border-red-300 animate-pulse">
         Could not fetch refresh time
       </span>
     );
 
   return (
-    <span className="inline-block text-xs md:text-sm px-3 py-1 rounded-none bg-gradient-to-r from-[#7c1fa2]/90 to-[#2d064d]/90 text-gray-100 shadow border border-violet-700/40 backdrop-blur-sm">
+    <span className="inline-block text-xs md:text-sm px-4 py-2 rounded-lg bg-gradient-to-r from-[#7c1fa2]/90 to-[#2d064d]/90 text-gray-100 shadow border border-violet-700/40 backdrop-blur-sm">
       Last refreshed at{" "}
       <span className="font-semibold">{formatDate(data)}</span>
     </span>

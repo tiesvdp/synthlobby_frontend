@@ -1,50 +1,57 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useSynths } from "@/context/synthContext.tsx";
+import { useEffect, useState, useMemo } from "react";
 import { HeartIcon } from "@/components/heartIcon.tsx";
 import { Button } from "@heroui/button";
 import { Card } from "@heroui/card";
-import type { Synth } from "@/models/synths.ts";
 import { motion } from "framer-motion";
 import { calculateRecentPriceChange } from "@/utils/priceUtils.ts";
+import { useGetSynths } from "@/api/synths";
+import { Spinner } from "@heroui/react";
+import { useUserPreferences } from "@/context/userPreferencesContext";
+import { formatSynthName } from "@/utils/nameUtils";
 
 export function SynthCarousel() {
-  const { synths, setSynths } = useSynths();
+  const { data: synths, isLoading: isLoadingSynths } = useGetSynths();
+  const {
+    likedSynthIds,
+    toggleLike,
+    isLoading: isLoadingLikes,
+  } = useUserPreferences();
+
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoaded, setIsLoaded] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
-  const featuredSynths = synths.slice(0, 8);
-  const changedSynths = [];
-
-  for (const synth of synths) {
-    if (!Array.isArray(synth.prices) || synth.prices.length < 2) continue;
-
-    const sortedPrices = [...synth.prices].sort((a, b) =>
-      b.date.localeCompare(a.date)
-    );
-
-    const recent = sortedPrices.slice(0, 5);
-    const pricesOnly = recent.map((p) => p.price);
-    const uniquePrices = new Set(pricesOnly);
-
-    if (uniquePrices.size > 1) {
-      let maxChange = 0;
-      for (let i = 1; i < pricesOnly.length; i++) {
-        const prev = pricesOnly[i];
-        const curr = pricesOnly[i - 1];
-        if (prev && curr && prev !== 0) {
-          const relChange = Math.abs((curr - prev) / prev);
-          if (relChange > maxChange) maxChange = relChange;
-        }
-      }
-      changedSynths.push({ ...synth, maxRelativeChange: maxChange });
-    }
-  }
-
-  changedSynths.sort((a, b) => b.maxRelativeChange - a.maxRelativeChange);
-
   const [cardsToShow, setCardsToShow] = useState(3);
+
+  const changedSynths = useMemo(() => {
+    if (!synths) return [];
+
+    const synthsWithChange = [];
+    for (const synth of synths) {
+      if (!Array.isArray(synth.prices) || synth.prices.length < 2) continue;
+
+      const sortedPrices = [...synth.prices].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+      const recentPrices = sortedPrices.slice(0, 5).map((p) => p.price);
+      const uniquePrices = new Set(recentPrices);
+
+      if (uniquePrices.size > 1) {
+        let maxChange = 0;
+        for (let i = 1; i < recentPrices.length; i++) {
+          const prev = recentPrices[i];
+          const curr = recentPrices[i - 1];
+          if (prev && curr && prev !== 0) {
+            const relChange = Math.abs((curr - prev) / prev);
+            if (relChange > maxChange) maxChange = relChange;
+          }
+        }
+        synthsWithChange.push({ ...synth, maxRelativeChange: maxChange });
+      }
+    }
+
+    return synthsWithChange
+      .sort((a, b) => b.maxRelativeChange - a.maxRelativeChange)
+      .slice(0, 8); // Limit to top 8 most changed
+  }, [synths]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -56,56 +63,44 @@ export function SynthCarousel() {
         setCardsToShow(3);
       }
     };
-
     handleResize();
     window.addEventListener("resize", handleResize);
-
-    if (featuredSynths.length > 0) {
-      setIsLoaded(true);
-    }
-
     return () => window.removeEventListener("resize", handleResize);
-  }, [featuredSynths]);
+  }, []);
 
   const handleNext = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex + 1 >= featuredSynths.length - cardsToShow + 1
-        ? 0
-        : prevIndex + 1
-    );
+    setCurrentIndex((prevIndex) => {
+      const numItems = changedSynths.length;
+      if (numItems <= cardsToShow) return 0;
+      const nextIndex = prevIndex + 1;
+      return nextIndex >= numItems - cardsToShow + 1 ? 0 : nextIndex;
+    });
   };
 
   const handlePrev = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0
-        ? Math.max(0, featuredSynths.length - cardsToShow)
-        : prevIndex - 1
-    );
-  };
-
-  const handleToggleLike = (id: Synth["id"]) => {
-    setSynths((prev: Synth[]) =>
-      prev.map((s: Synth) => (s.id === id ? { ...s, liked: !s.liked } : s))
-    );
+    setCurrentIndex((prevIndex) => {
+      const numItems = changedSynths.length;
+      if (numItems <= cardsToShow) return 0;
+      return prevIndex === 0
+        ? Math.max(0, numItems - cardsToShow)
+        : prevIndex - 1;
+    });
   };
 
   useEffect(() => {
-    if (isHovering) return;
+    if (isHovering || changedSynths.length <= cardsToShow) return;
 
     const interval = setInterval(() => {
       handleNext();
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [currentIndex, isHovering, changedSynths.length]);
+  }, [currentIndex, isHovering, changedSynths.length, cardsToShow]);
 
-  if (!isLoaded || changedSynths.length === 0) {
+  if (isLoadingSynths || isLoadingLikes) {
     return (
       <div className="w-full flex justify-center items-center py-20">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="h-8 w-64 bg-default-200 rounded mb-4"></div>
-          <div className="h-64 w-full max-w-md bg-default-200 rounded"></div>
-        </div>
+        <Spinner color="secondary" label="Loading Trending Synths..." />
       </div>
     );
   }
@@ -113,7 +108,9 @@ export function SynthCarousel() {
   if (changedSynths.length < 3) {
     return (
       <div className="text-center py-10">
-        <p>Not enough synths available. Check back soon!</p>
+        <p className="text-gray-500">
+          Not enough trending synths to display right now.
+        </p>
       </div>
     );
   }
@@ -133,8 +130,6 @@ export function SynthCarousel() {
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             {changedSynths.map((synth) => {
-              const name = synth.name || `${synth.brand} ${synth.name}`;
-
               const { currentPrice, previousPrice, percentChange } =
                 calculateRecentPriceChange(synth.prices);
 
@@ -152,12 +147,14 @@ export function SynthCarousel() {
                         href={synth.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full rounded-xl block cursor-pointer"
+                        className="w-full h-full absolute top-0 left-0 block cursor-pointer"
                         tabIndex={0}
-                        aria-label={`Open ${name} on source site`}
+                        aria-label={`Open ${formatSynthName(
+                          synth
+                        )} on source site`}
                       >
                         <img
-                          alt={name}
+                          alt={formatSynthName(synth)}
                           className="object-cover absolute top-0 left-0 w-full h-full transition-transform duration-500 hover:scale-110"
                           src={synth.image || "/placeholder.svg"}
                         />
@@ -168,13 +165,15 @@ export function SynthCarousel() {
                           aria-label="Like"
                           className="bg-white/80 backdrop-blur-sm"
                           size="sm"
-                          onPress={() => handleToggleLike(synth.id)}
+                          onPress={() => toggleLike(synth.id)}
                         >
-                          <HeartIcon filled={synth.liked} />
+                          <HeartIcon filled={likedSynthIds.has(synth.id)} />
                         </Button>
                       </div>
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                        <p className="text-white font-bold truncate">{name}</p>
+                        <p className="text-white font-bold truncate">
+                          {formatSynthName(synth)}
+                        </p>
                       </div>
                     </div>
                     <div className="p-4 flex justify-between items-center bg-white">
@@ -225,6 +224,7 @@ export function SynthCarousel() {
           size="sm"
           radius="full"
           onPress={handlePrev}
+          isDisabled={changedSynths.length <= cardsToShow}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -243,7 +243,7 @@ export function SynthCarousel() {
 
         <div className="flex justify-center gap-1">
           {Array.from({
-            length: Math.ceil(featuredSynths.length - cardsToShow + 1),
+            length: Math.max(0, changedSynths.length - cardsToShow + 1),
           }).map((_, index) => (
             <button
               key={index}
@@ -251,6 +251,7 @@ export function SynthCarousel() {
                 currentIndex === index ? "w-6 bg-[#c026d3]" : "w-2 bg-gray-200"
               }`}
               onClick={() => setCurrentIndex(index)}
+              aria-label={`Go to slide ${index + 1}`}
             />
           ))}
         </div>
@@ -261,6 +262,7 @@ export function SynthCarousel() {
           size="sm"
           radius="full"
           onPress={handleNext}
+          isDisabled={changedSynths.length <= cardsToShow}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
