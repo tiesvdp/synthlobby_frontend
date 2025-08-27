@@ -6,24 +6,26 @@ import { IoClose } from "react-icons/io5";
 import { useGetSynths } from "@/api/synths";
 import { useUserPreferences } from "@/context/userPreferencesContext";
 import { Synth } from "@/models/synths";
-import { usePriceChart, Granularity } from "@/hooks/usePriceChart";
+import { usePriceChart } from "@/hooks/usePriceChart";
 import { formatSynthName } from "@/utils/nameUtils";
+import { Granularity, TimeframeDurations } from "@/models/pricechart";
+import SynthPriceDisplay from "../synth/synthPriceDisplay";
 
 const GranularityButton = ({
   mode,
   label,
-  granularity,
+  activeGranularity,
   setGranularity,
 }: {
   mode: Granularity;
   label: string;
-  granularity: Granularity;
+  activeGranularity: Granularity;
   setGranularity: (g: Granularity) => void;
 }) => (
   <button
     onClick={() => setGranularity(mode)}
     className={`px-3 py-1 text-xs rounded-md transition-colors ${
-      granularity === mode
+      activeGranularity === mode
         ? "bg-purple-700 text-white"
         : "bg-gray-200 text-gray-700 hover:bg-gray-300"
     }`}
@@ -48,11 +50,18 @@ const ComparisonItem = ({
       transition={{ duration: 0.3, type: "spring" }}
       className="relative group flex items-center gap-4 bg-white p-3 rounded-xl shadow-sm border border-transparent hover:border-purple-200 transition-all"
     >
-      <img
-        src={synth.image || "/placeholder.svg"}
-        alt={formatSynthName(synth)}
-        className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
-      />
+      <a
+        href={synth.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex-shrink-0"
+      >
+        <img
+          src={synth.image || "/placeholder.svg"}
+          alt={formatSynthName(synth)}
+          className="w-20 h-20 object-cover rounded-lg"
+        />
+      </a>
       <div className="flex-grow overflow-hidden">
         <p
           className="font-bold text-gray-800 truncate text-base"
@@ -60,7 +69,7 @@ const ComparisonItem = ({
         >
           {formatSynthName(synth)}
         </p>
-        <p className="text-md text-purple-700 font-semibold">€{synth.price}</p>
+        <SynthPriceDisplay synth={synth} />
         <p className="text-sm text-gray-500 truncate">{synth.source}</p>
       </div>
       <button
@@ -81,17 +90,26 @@ export default function ComparisonChart() {
     toggleCompare,
     isLoading: isLoadingPrefs,
   } = useUserPreferences();
-  const [granularity, setGranularity] = useState<Granularity>("day");
+
+  const [activeGranularity, setActiveGranularity] =
+    useState<Granularity>("day");
+
+  const timeframeDurations: TimeframeDurations = {
+    day: 8,
+    week: 6,
+    month: 6,
+    year: 3,
+  };
 
   const synthsToCompare = useMemo(() => {
     if (!allSynths || compareSynthIds.size === 0) return [];
     return allSynths.filter((synth) => compareSynthIds.has(synth.id));
   }, [allSynths, compareSynthIds]);
 
-  const { chartData, chartOptions } = usePriceChart(
-    synthsToCompare,
-    granularity
-  );
+  const { chartData, chartOptions } = usePriceChart(synthsToCompare, {
+    activeGranularity,
+    durations: timeframeDurations,
+  });
 
   if (isLoadingSynths || isLoadingPrefs) {
     return (
@@ -114,26 +132,26 @@ export default function ComparisonChart() {
                 <GranularityButton
                   mode="day"
                   label="D"
-                  granularity={granularity}
-                  setGranularity={setGranularity}
+                  activeGranularity={activeGranularity}
+                  setGranularity={setActiveGranularity}
                 />
                 <GranularityButton
                   mode="week"
                   label="W"
-                  granularity={granularity}
-                  setGranularity={setGranularity}
+                  activeGranularity={activeGranularity}
+                  setGranularity={setActiveGranularity}
                 />
                 <GranularityButton
                   mode="month"
                   label="M"
-                  granularity={granularity}
-                  setGranularity={setGranularity}
+                  activeGranularity={activeGranularity}
+                  setGranularity={setActiveGranularity}
                 />
                 <GranularityButton
                   mode="year"
                   label="Y"
-                  granularity={granularity}
-                  setGranularity={setGranularity}
+                  activeGranularity={activeGranularity}
+                  setGranularity={setActiveGranularity}
                 />
               </div>
             </div>

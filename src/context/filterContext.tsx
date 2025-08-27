@@ -33,9 +33,9 @@ const defaultValue: FilterContextProps = {
   debouncedSearch: "",
   filterType: "",
   setFilterType: () => {},
-  priceRange: [50, Infinity],
+  priceRange: [0, Infinity],
   setPriceRange: () => {},
-  debouncedPriceRange: [50, Infinity],
+  debouncedPriceRange: [0, Infinity],
   filterLikes: false,
   setFilterLikes: () => {},
   filterCompared: false,
@@ -52,7 +52,7 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
   const [search, setSearch, debouncedSearch] = useDebouncedState("");
   const [filterType, setFilterType] = useState("");
   const [priceRange, setPriceRange, debouncedPriceRange] = useDebouncedState([
-    10,
+    0,
     Infinity,
   ]);
   const [filterLikes, setFilterLikes] = useState(false);

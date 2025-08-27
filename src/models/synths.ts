@@ -1,7 +1,7 @@
 export type Synth = {
   name: string;
   href: string;
-  price: number;
+  price: number | null;
   availability: string;
   image: string;
   brand: string;
@@ -9,7 +9,7 @@ export type Synth = {
   id: string;
   liked?: boolean;
   prices: {
-    price: number;
+    price: number | null;
     date: string;
   }[];
 };

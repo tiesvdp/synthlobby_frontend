@@ -52,17 +52,17 @@ export function HeroSection() {
           >
             <div className="relative overflow-hidden rounded-[2rem] md:rounded-[3rem] shadow-2xl mx-2 lg:ms-0">
               <img
-                src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80"
-                alt="Music studio with synthesizers"
+                src="https://images.unsplash.com/photo-1560849807-bae5314c9e98?q=80&w=1228&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                alt="Synthesizers"
                 className="w-full h-auto"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#7c1fa2]/40 to-transparent"></div>{" "}
               <div className="absolute bottom-4 left-4 right-4">
-                <p className="text-white font-bold text-xl ps-2">
-                  Find your perfect sound
-                </p>
                 <p className="text-gray-200 ps-2">
                   Compare prices across all major retailers
+                </p>
+                <p className="text-white font-bold text-xl ps-2">
+                  Find your perfect sound
                 </p>
               </div>
             </div>

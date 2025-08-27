@@ -1,44 +1,66 @@
 import { PriceChangeResult, PricePoint } from "@/models/prices";
 import type { Synth } from "@/models/synths.ts";
-import { subDays } from "date-fns";
+import { format, subDays } from "date-fns";
 
 /**
- * Calculates the most recent price change based on the last 5 price entries.
+ * Retrieves price history entries from the last X days.
+ * @param prices - An array of price objects.
+ * @param days - The number of days to look back.
+ * @returns An array of price entries within the specified time frame.
+ */
+export function getRecentPriceHistory(
+  prices: Synth["prices"],
+  days: number = 5
+): Synth["prices"] {
+  if (!Array.isArray(prices) || prices.length === 0) {
+    return [];
+  }
+
+  const startDate = subDays(new Date(), days);
+  const formattedStartDate = format(startDate, "yyyy-MM-dd");
+
+  return prices.filter((p) => p.date >= formattedStartDate);
+}
+
+/**
+ * Calculates the most recent price change based on price history
+ * from the last 5 days.
  * @param prices - An array of price objects, each with a date and a price.
  * @returns An object containing the current price, the previous unique price, and the percentage change.
  */
 export function calculateRecentPriceChange(
-  prices: Synth["prices"]
+  prices: Synth["prices"],
+  days: number = 5
 ): PriceChangeResult {
-  // 1. Validate input
-  if (!Array.isArray(prices) || prices.length < 2) {
+  // 1. Get recent price history (last 5 days)
+  const recentPrices = getRecentPriceHistory(prices, days);
+
+  // 2. Validate input
+  if (!Array.isArray(recentPrices) || recentPrices.length < 2) {
     return { currentPrice: null, previousPrice: null, percentChange: null };
   }
 
-  // 2. Sort prices by date descending (most recent first)
-  const sortedPrices = [...prices].sort((a, b) => b.date.localeCompare(a.date));
+  // 3. Sort prices by date descending (most recent first)
+  const sortedPrices = [...recentPrices].sort((a, b) =>
+    b.date.localeCompare(a.date)
+  );
 
-  // 3. Take the 5 most recent entries
-  const recentEntries = sortedPrices.slice(0, 5);
-
-  // 4. Check if there is more than one unique price in these recent entries
-  const uniquePrices = new Set(recentEntries.map((p) => p.price));
-  if (uniquePrices.size <= 1) {
-    // No price change in the recent entries
-    return {
-      currentPrice: sortedPrices[0]?.price ?? null,
-      previousPrice: null,
-      percentChange: null,
-    };
+  // 4. Find the current and previous valid prices
+  const currentEntry = sortedPrices.find((p) => p.price !== null);
+  if (!currentEntry) {
+    return { currentPrice: null, previousPrice: null, percentChange: null };
   }
+  const currentPrice = currentEntry.price;
 
-  // 5. Find the current and previous unique prices
-  const currentPrice = sortedPrices[0].price;
-  const previousEntry = sortedPrices.find((p) => p.price !== currentPrice);
+  // 5. Find the first previous entry with a different, non-null price
+  const previousEntry = sortedPrices.find(
+    (p) =>
+      p.date < currentEntry.date && p.price !== null && p.price !== currentPrice
+  );
   const previousPrice = previousEntry?.price ?? null;
 
   let percentChange: number | null = null;
-  if (previousPrice !== null && previousPrice !== 0) {
+  if (previousPrice !== null && previousPrice !== 0 && currentPrice !== null) {
     percentChange = ((currentPrice - previousPrice) / previousPrice) * 100;
   }
 
@@ -100,9 +122,25 @@ export const generatePriceHistory = (
   return history.sort((a, b) => a.date.getTime() - b.date.getTime());
 };
 
-export const formatPrice = (price: number | string) => {
-  if (!price) return "";
+export const formatPrice = (price: number | string | null) => {
+  if (price === null || price === undefined) return "";
   const num = typeof price === "string" ? parseFloat(price) : price;
   if (isNaN(num)) return String(price);
   return "€" + num.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
+/**
+ * Checks if a synth has a recent price available within the last X days.
+ * @param synth - The synth object.
+ * @param days - The number of days to look back.
+ * @returns boolean - True if a non-null price exists in the recent history.
+ */
+export const hasRecentPrice = (synth: Synth, days: number = 1): boolean => {
+  if (!synth.prices || synth.prices.length === 0) {
+    return false;
+  }
+
+  // Get prices from the last 'days' and check if any of them have a non-null price.
+  const recentPrices = getRecentPriceHistory(synth.prices, days);
+  return recentPrices.some((p) => p.price !== null);
 };

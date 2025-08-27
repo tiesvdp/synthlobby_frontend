@@ -83,7 +83,7 @@ const Dashboard: FunctionComponent = () => {
         const { percentChange } = calculateRecentPriceChange(synth.prices);
         return { ...synth, percentChange };
       })
-      .filter((s) => s.percentChange !== null);
+      .filter((s) => s.percentChange !== null || s.percentChange !== 0);
 
     synthsWithChange.sort(
       (a, b) => (a.percentChange ?? 0) - (b.percentChange ?? 0)

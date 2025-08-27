@@ -6,7 +6,8 @@ import { Line } from "react-chartjs-2";
 import { HeartIcon } from "@/components/heartIcon.tsx";
 import type { Synth } from "@/models/synths.ts";
 import { useAuth } from "@/context/authContext";
-import { usePriceChart, Granularity } from "@/hooks/usePriceChart";
+import { usePriceChart } from "@/hooks/usePriceChart";
+import { Granularity, TimeframeDurations } from "@/models/pricechart";
 import SynthPriceDisplay from "./synthPriceDisplay";
 import CompareButton from "./compareButton";
 import { formatSynthName } from "@/utils/nameUtils";
@@ -23,18 +24,18 @@ interface SynthCardProps {
 const GranularityButton = ({
   mode,
   label,
-  granularity,
+  activeGranularity,
   setGranularity,
 }: {
   mode: Granularity;
   label: string;
-  granularity: Granularity;
+  activeGranularity: Granularity;
   setGranularity: (g: Granularity) => void;
 }) => (
   <button
     onClick={() => setGranularity(mode)}
     className={`flex items-center justify-center w-7 h-7 text-xs rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-1 ${
-      granularity === mode
+      activeGranularity === mode
         ? "bg-purple-700 text-white font-semibold shadow-sm"
         : "bg-gray-200 text-gray-700 hover:bg-gray-300"
     }`}
@@ -50,8 +51,20 @@ const SynthCard: FunctionComponent<SynthCardProps> = ({
   onToggleLike,
   onToggleCompare,
 }) => {
-  const [granularity, setGranularity] = useState<Granularity>("day");
-  const { chartData, chartOptions } = usePriceChart([synth], granularity);
+  const [activeGranularity, setActiveGranularity] =
+    useState<Granularity>("day");
+
+  const timeframeDurations: TimeframeDurations = {
+    day: 6,
+    week: 5,
+    month: 5,
+    year: 2,
+  };
+
+  const { chartData, chartOptions } = usePriceChart([synth], {
+    activeGranularity,
+    durations: timeframeDurations,
+  });
 
   const getAvailabilityStyle = (availability: string) => {
     switch (availability.toLowerCase()) {
@@ -128,26 +141,26 @@ const SynthCard: FunctionComponent<SynthCardProps> = ({
             <GranularityButton
               mode="day"
               label="D"
-              granularity={granularity}
-              setGranularity={setGranularity}
+              activeGranularity={activeGranularity}
+              setGranularity={setActiveGranularity}
             />
             <GranularityButton
               mode="week"
               label="W"
-              granularity={granularity}
-              setGranularity={setGranularity}
+              activeGranularity={activeGranularity}
+              setGranularity={setActiveGranularity}
             />
             <GranularityButton
               mode="month"
               label="M"
-              granularity={granularity}
-              setGranularity={setGranularity}
+              activeGranularity={activeGranularity}
+              setGranularity={setActiveGranularity}
             />
             <GranularityButton
               mode="year"
               label="Y"
-              granularity={granularity}
-              setGranularity={setGranularity}
+              activeGranularity={activeGranularity}
+              setGranularity={setActiveGranularity}
             />
           </div>
           <div className="relative flex-grow min-h-[150px]">

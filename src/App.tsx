@@ -7,6 +7,7 @@ import Dashboard from "./pages/dashboard";
 import ProtectedRoute from "./components/protectedRoute";
 import ComparePage from "./pages/compare";
 import Privacy from "./pages/privacy";
+import AuthRoute from "./components/authRoute";
 
 function App() {
   return (
@@ -22,8 +23,22 @@ function App() {
         }
         path="/dashboard"
       />
-      <Route element={<Login />} path="/login" />
-      <Route element={<Register />} path="/register" />
+      <Route
+        element={
+          <AuthRoute>
+            <Login />
+          </AuthRoute>
+        }
+        path="/login"
+      />
+      <Route
+        element={
+          <AuthRoute>
+            <Register />
+          </AuthRoute>
+        }
+        path="/register"
+      />
       <Route element={<Privacy />} path="/privacy" />
     </Routes>
   );

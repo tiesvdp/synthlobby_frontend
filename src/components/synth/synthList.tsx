@@ -34,10 +34,24 @@ const SynthList: FunctionComponent<SynthListProps> = ({ synths }) => {
   const itemsPerPage = 24;
 
   const filteredSynths = useMemo(() => {
+    const isPriceFilterPermissive =
+      debouncedPriceRange[0] === 0 && debouncedPriceRange[1] === Infinity;
+
     return synths
       .filter((synth) => {
-        const price = Number(synth.price);
-        if (isNaN(price)) return false;
+        const price = synth.price !== null ? Number(synth.price) : null;
+        if (price === null) {
+          if (!isPriceFilterPermissive) {
+            return false;
+          }
+        } else {
+          if (
+            price < debouncedPriceRange[0] ||
+            price > debouncedPriceRange[1]
+          ) {
+            return false;
+          }
+        }
 
         if (
           debouncedSearch &&
@@ -45,10 +59,6 @@ const SynthList: FunctionComponent<SynthListProps> = ({ synths }) => {
             .toLowerCase()
             .includes(debouncedSearch.toLowerCase())
         ) {
-          return false;
-        }
-
-        if (price < debouncedPriceRange[0] || price > debouncedPriceRange[1]) {
           return false;
         }
 

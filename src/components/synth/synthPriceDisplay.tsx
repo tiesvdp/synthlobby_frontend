@@ -1,5 +1,5 @@
 import { FunctionComponent, useMemo } from "react";
-import { calculateRecentPriceChange } from "@/utils/priceUtils";
+import { calculateRecentPriceChange, hasRecentPrice } from "@/utils/priceUtils";
 import { Synth } from "@/models/synths";
 
 interface SynthPriceDisplayProps {
@@ -9,10 +9,33 @@ interface SynthPriceDisplayProps {
 const SynthPriceDisplay: FunctionComponent<SynthPriceDisplayProps> = ({
   synth,
 }) => {
-  const { currentPrice, previousPrice, percentChange } = useMemo(
-    () => calculateRecentPriceChange(synth.prices),
-    [synth.prices]
-  );
+  const priceData = useMemo(() => {
+    if (!hasRecentPrice(synth)) {
+      return { isPriceAvailableToday: false };
+    }
+
+    const { currentPrice, previousPrice, percentChange } =
+      calculateRecentPriceChange(synth.prices);
+
+    return {
+      isPriceAvailableToday: true,
+      currentPrice,
+      previousPrice,
+      percentChange,
+    };
+  }, [synth]);
+
+  if (!priceData.isPriceAvailableToday) {
+    return (
+      <div className="flex items-center gap-2 mt-2 sm:mt-1 h-[28px]">
+        <p className="text-sm text-gray-500 italic">
+          Price currently not available
+        </p>
+      </div>
+    );
+  }
+
+  const { currentPrice, previousPrice, percentChange } = priceData;
 
   return (
     <div className="flex items-center gap-2 mt-2 sm:mt-1">
@@ -21,16 +44,12 @@ const SynthPriceDisplay: FunctionComponent<SynthPriceDisplayProps> = ({
           €{previousPrice}
         </span>
       )}
-      {currentPrice !== null ? (
+      {currentPrice !== null && (
         <span className="font-bold text-xl text-[#c026d3]">
           €{currentPrice}
         </span>
-      ) : (
-        <p className="text-tiny uppercase font-bold text-gray-400">
-          no price available
-        </p>
       )}
-      {percentChange !== null && (
+      {percentChange !== null && percentChange !== undefined && (
         <span
           className={`ml-2 px-2.5 py-1 rounded-lg text-xs font-semibold border ${
             percentChange > 0

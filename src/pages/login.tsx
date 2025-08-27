@@ -22,7 +22,7 @@ const Login: FunctionComponent = () => {
     setMessage("");
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/");
+      navigate("/dashboard");
     } catch (err: any) {
       setError(err.message);
       console.error(err);

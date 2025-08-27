@@ -3,11 +3,12 @@ import { HeartIcon } from "@/components/heartIcon.tsx";
 import { Button } from "@heroui/button";
 import { Card } from "@heroui/card";
 import { motion } from "framer-motion";
-import { calculateRecentPriceChange } from "@/utils/priceUtils.ts";
 import { useGetSynths } from "@/api/synths";
 import { Spinner } from "@heroui/react";
 import { useUserPreferences } from "@/context/userPreferencesContext";
 import { formatSynthName } from "@/utils/nameUtils";
+import { calculateRecentPriceChange } from "@/utils/priceUtils";
+import SynthPriceDisplay from "./synthPriceDisplay";
 
 export function SynthCarousel() {
   const { data: synths, isLoading: isLoadingSynths } = useGetSynths();
@@ -24,33 +25,24 @@ export function SynthCarousel() {
   const changedSynths = useMemo(() => {
     if (!synths) return [];
 
-    const synthsWithChange = [];
-    for (const synth of synths) {
-      if (!Array.isArray(synth.prices) || synth.prices.length < 2) continue;
-
-      const sortedPrices = [...synth.prices].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
-      const recentPrices = sortedPrices.slice(0, 5).map((p) => p.price);
-      const uniquePrices = new Set(recentPrices);
-
-      if (uniquePrices.size > 1) {
-        let maxChange = 0;
-        for (let i = 1; i < recentPrices.length; i++) {
-          const prev = recentPrices[i];
-          const curr = recentPrices[i - 1];
-          if (prev && curr && prev !== 0) {
-            const relChange = Math.abs((curr - prev) / prev);
-            if (relChange > maxChange) maxChange = relChange;
-          }
+    const synthsWithChange = synths
+      .map((synth) => {
+        const { percentChange } = calculateRecentPriceChange(synth.prices, 5);
+        if (percentChange !== null && percentChange !== 0) {
+          return { ...synth, maxRelativeChange: Math.abs(percentChange) };
         }
-        synthsWithChange.push({ ...synth, maxRelativeChange: maxChange });
-      }
-    }
-
-    return synthsWithChange
+        return null;
+      })
+      .filter(
+        (
+          synth
+        ): synth is (typeof synths)[number] & { maxRelativeChange: number } =>
+          synth !== null
+      )
       .sort((a, b) => b.maxRelativeChange - a.maxRelativeChange)
-      .slice(0, 8); // Limit to top 8 most changed
+      .slice(0, 8);
+
+    return synthsWithChange;
   }, [synths]);
 
   useEffect(() => {
@@ -130,9 +122,6 @@ export function SynthCarousel() {
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             {changedSynths.map((synth) => {
-              const { currentPrice, previousPrice, percentChange } =
-                calculateRecentPriceChange(synth.prices);
-
               return (
                 <motion.div
                   key={synth.id}
@@ -155,7 +144,7 @@ export function SynthCarousel() {
                       >
                         <img
                           alt={formatSynthName(synth)}
-                          className="object-cover absolute top-0 left-0 w-full h-full transition-transform duration-500 hover:scale-110"
+                          className="object-contain bg-white absolute top-0 left-0 w-full h-full transition-transform duration-500 hover:scale-110"
                           src={synth.image || "/placeholder.svg"}
                         />
                       </a>
@@ -170,43 +159,18 @@ export function SynthCarousel() {
                           <HeartIcon filled={likedSynthIds.has(synth.id)} />
                         </Button>
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
                         <p className="text-white font-bold truncate">
                           {formatSynthName(synth)}
                         </p>
                       </div>
                     </div>
-                    <div className="p-4 flex justify-between items-center bg-white">
+                    <div className="p-4 pt-3 flex justify-between items-center bg-white">
                       <div>
+                        <SynthPriceDisplay synth={synth} />
                         <p className="text-default-500 text-sm">
                           {synth.source}
                         </p>
-                        <div className="flex items-center gap-2">
-                          {previousPrice !== null &&
-                            previousPrice !== currentPrice && (
-                              <span className="text-gray-400 text-base line-through font-medium">
-                                €{previousPrice}
-                              </span>
-                            )}
-                          {currentPrice !== null && (
-                            <span className="font-bold text-xl text-[#c026d3]">
-                              €{currentPrice}
-                            </span>
-                          )}
-                          {percentChange !== null &&
-                            previousPrice !== currentPrice && (
-                              <span
-                                className={`ml-2 px-2 py-1 rounded text-xs font-semibold ${
-                                  percentChange > 0
-                                    ? "bg-red-100 text-red-700"
-                                    : "bg-green-100 text-green-700"
-                                }`}
-                              >
-                                {percentChange > 0 ? "+" : ""}
-                                {percentChange.toFixed(1)}%
-                              </span>
-                            )}
-                        </div>
                       </div>
                     </div>
                   </Card>

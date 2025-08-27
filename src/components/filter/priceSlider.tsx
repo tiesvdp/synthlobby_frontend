@@ -32,8 +32,8 @@ const PriceSlider: FunctionComponent = () => {
         }}
         formatOptions={{ style: "currency", currency: "EUR" }}
         maxValue={3000}
-        minValue={10}
-        defaultValue={[10, 2000]}
+        minValue={0}
+        defaultValue={[0, 2000]}
         renderThumb={({ index, ...props }) => (
           <div
             {...props}

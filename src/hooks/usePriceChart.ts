@@ -2,20 +2,18 @@ import { useMemo } from "react";
 import { TooltipItem } from "chart.js";
 import {
   format,
+  subDays,
   subWeeks,
-  startOfWeek,
-  isSameDay,
   subMonths,
-  startOfMonth,
   subYears,
-  startOfYear,
+  eachDayOfInterval,
 } from "date-fns";
 import { Synth } from "@/models/synths";
-import { PricePoint } from "@/models/prices";
+import { PriceChartOptions } from "@/models/pricechart";
 
-export type Granularity = "day" | "week" | "month" | "year";
+export const usePriceChart = (synths: Synth[], options: PriceChartOptions) => {
+  const { activeGranularity, durations } = options;
 
-export const usePriceChart = (synths: Synth[], granularity: Granularity) => {
   return useMemo(() => {
     const synthsWithPriceHistory = synths.map((synth) => ({
       ...synth,
@@ -24,43 +22,36 @@ export const usePriceChart = (synths: Synth[], granularity: Granularity) => {
         .sort((a, b) => a.date.getTime() - b.date.getTime()),
     }));
 
+    const duration = durations[activeGranularity];
     const today = new Date();
-    const synthsWithFilteredHistory = synthsWithPriceHistory.map((synth) => {
-      let filteredPrices: PricePoint[];
-      switch (granularity) {
-        case "day":
-          filteredPrices = synth.prices.slice(-5);
-          break;
-        case "week":
-          filteredPrices = synth.prices.slice(-35);
-          break;
-        case "month":
-          const fiveMonthsAgo = startOfMonth(subMonths(today, 4));
-          filteredPrices = synth.prices.filter((p) => p.date >= fiveMonthsAgo);
-          break;
-        case "year":
-        default:
-          filteredPrices = synth.prices;
-          break;
-      }
-      return { ...synth, prices: filteredPrices };
+    let startDate: Date;
+
+    switch (activeGranularity) {
+      case "week":
+        startDate = subWeeks(today, duration);
+        break;
+      case "month":
+        startDate = subMonths(today, duration);
+        break;
+      case "year":
+        startDate = subYears(today, duration);
+        break;
+      case "day":
+      default:
+        startDate = subDays(today, duration - 1);
+        break;
+    }
+
+    const allDateObjects = eachDayOfInterval({
+      start: startDate,
+      end: today,
     });
 
-    const allDateObjects = [
-      ...new Set(
-        synthsWithFilteredHistory.flatMap((s) =>
-          s.prices.map((p) => format(p.date, "yyyy-MM-dd"))
-        )
-      ),
-    ]
-      .sort()
-      .map((dateStr) => new Date(dateStr));
-
-    if (allDateObjects.length === 0) {
+    if (synths.length === 0) {
       return { chartData: { labels: [], datasets: [] }, chartOptions: {} };
     }
 
-    const datasets = synthsWithFilteredHistory.map((synth, idx) => {
+    const datasets = synthsWithPriceHistory.map((synth, idx) => {
       const priceMap = new Map(
         synth.prices.map((p) => [format(p.date, "yyyy-MM-dd"), p.price])
       );
@@ -85,7 +76,7 @@ export const usePriceChart = (synths: Synth[], granularity: Granularity) => {
         borderColor: color,
         backgroundColor: color,
         tension: 0,
-        pointRadius: granularity === "day" ? 4 : 0,
+        pointRadius: activeGranularity === "day" ? 4 : 0,
         pointBorderColor: "#fff",
         pointBorderWidth: 1,
         pointHitRadius: 10,
@@ -93,14 +84,34 @@ export const usePriceChart = (synths: Synth[], granularity: Granularity) => {
       };
     });
 
+    let labelFormat: string;
+    switch (activeGranularity) {
+      case "year":
+        labelFormat = "MMM yyyy";
+        break;
+      case "month":
+        labelFormat = "MMM";
+        break;
+      case "week":
+        labelFormat = "d MMM";
+        break;
+      case "day":
+      default:
+        labelFormat = "d";
+        break;
+    }
+
     const chartData = {
-      labels: allDateObjects.map((d) => format(d, "dd/MM/yy")),
+      labels: allDateObjects.map((d) => format(d, labelFormat)),
       datasets,
     };
 
     const chartOptions = {
       responsive: true,
       maintainAspectRatio: false,
+      animation: {
+        duration: 300,
+      },
       plugins: {
         legend: { display: synths.length > 1, position: "top" as const },
         tooltip: {
@@ -129,32 +140,9 @@ export const usePriceChart = (synths: Synth[], granularity: Granularity) => {
         x: {
           grid: { display: false },
           ticks: {
-            autoSkip: false,
+            autoSkip: true,
             maxRotation: 0,
-            callback: function (_: any, index: number) {
-              const currentDate = allDateObjects[index];
-              if (!currentDate) return null;
-              if (granularity === "day") return format(currentDate, "d MMM");
-              let tickDates: Date[] = [];
-              for (let i = 0; i < 5; i++) {
-                if (granularity === "week")
-                  tickDates.push(startOfWeek(subWeeks(today, i)));
-                if (granularity === "month")
-                  tickDates.push(startOfMonth(subMonths(today, i)));
-                if (granularity === "year")
-                  tickDates.push(startOfYear(subYears(today, i)));
-              }
-              const isTickDate = tickDates.some((tickDate) =>
-                isSameDay(currentDate, tickDate)
-              );
-              if (isTickDate) {
-                if (granularity === "week") return format(currentDate, "dd/MM");
-                if (granularity === "month")
-                  return format(currentDate, "MMM yy");
-                if (granularity === "year") return format(currentDate, "yyyy");
-              }
-              return null;
-            },
+            maxTicksLimit: duration + 1,
           },
         },
         y: {
@@ -163,12 +151,12 @@ export const usePriceChart = (synths: Synth[], granularity: Granularity) => {
           ticks: {
             callback: (value: any) => `€${value}`,
             autoSkip: true,
-            maxTicksLimit: 5,
+            maxTicksLimit: 4,
           },
         },
       },
     };
 
     return { chartData, chartOptions };
-  }, [synths, granularity]);
+  }, [synths, activeGranularity, durations]);
 };
